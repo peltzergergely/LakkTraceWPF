@@ -12,8 +12,8 @@
         WindowStartupLocation="CenterScreen" 
         WindowStyle="None" FontFamily="Verdana" 
         Background="#FDFDFD">
-    <Grid>
-        <StackPanel>
+    <Grid >
+        <StackPanel x:Name="mainStackPanel" Background="White">
             <Label Content="Lakkozó Traceability" 
                    Padding="10" 
                    FontSize="25" 
@@ -32,6 +32,7 @@
                     Margin="0,200,0,0">
             <Grid>
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -85,18 +86,8 @@
                           Grid.ColumnSpan="2" 
                           HorizontalAlignment="Center"
                           VerticalAlignment="Top"
-                          Margin="30,15"
-                          Height="80">prod</TextBlock>
+                          Margin="30,15">Termék</TextBlock>
                 <TextBlock x:Name="carrierLbl"
-                          Grid.Row="3"
-                          Grid.Column="0"
-                          FontSize="35" 
-                          Grid.ColumnSpan="2" 
-                          HorizontalAlignment="Center"
-                          VerticalAlignment="Bottom"
-                          Margin="30,15"
-                          >carr</TextBlock>
-                <TextBlock x:Name="dbresultLbl"
                           Grid.Row="4"
                           Grid.Column="0"
                           FontSize="35" 
@@ -104,7 +95,16 @@
                           HorizontalAlignment="Center"
                           VerticalAlignment="Bottom"
                           Margin="30,15"
-                          >Sys</TextBlock>
+                          >Keret</TextBlock>
+                <TextBlock x:Name="dbresultLbl"
+                          Grid.Row="5"
+                          Grid.Column="0"
+                          FontSize="35" 
+                          Grid.ColumnSpan="2" 
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Bottom"
+                          Margin="30,15"
+                          >Adatbázis</TextBlock>
             </Grid>
         </StackPanel>
 
@@ -201,9 +201,7 @@
                     Background="#FDFDFD" 
                     BorderBrush="White" 
                     Foreground="DarkSlateGray"
-                    Click="SaveBtn_Click" 
-                    IsTabStop="True" 
-                    TabIndex="2">
+                    Click="SaveBtn_Click">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock VerticalAlignment="Center" 
                                Margin="5" 
