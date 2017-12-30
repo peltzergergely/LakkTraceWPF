@@ -42,6 +42,8 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="400" />
                     <ColumnDefinition Width="1100" />
+                    <ColumnDefinition Width="200
+                                      " />
                 </Grid.ColumnDefinitions>
 
                 <TextBlock Grid.Row="0"
@@ -55,14 +57,20 @@
                           FontSize="35" 
                           HorizontalAlignment="Right" Margin="30,15">
                     Keret DataMátrix</TextBlock>
-                <DataGrid x:Name="dataGridView1"
+                <DataGrid x:Name="dataGridView1" 
                           Grid.Row="2"
                           Grid.Column="0" 
                           Grid.ColumnSpan="2" 
-                          Height="150"
+                          Height="auto"
+                          Width="1000"
                           FontSize="20" 
                           HorizontalAlignment="Stretch" 
-                          ColumnWidth="0.25*" />
+                          ColumnWidth="0.25*"
+                          RowHeaderWidth="0"
+                          BorderThickness="0"
+                          IsEnabled="False"
+                          >
+                </DataGrid>
                 <TextBox x:Name="productTxbx"
                          Grid.Row="0"
                          Grid.Column="1" 
@@ -104,6 +112,16 @@
                           HorizontalAlignment="Center"
                           VerticalAlignment="Bottom"
                           Margin="30,15"
+                          >Adatbázis</TextBlock>
+                <TextBlock x:Name="dailyProductionLbl"
+                          Grid.Row="0"
+                          Grid.RowSpan="3"
+                          Grid.Column="3"
+                          FontSize="18" 
+                          Grid.ColumnSpan="2" 
+                          HorizontalAlignment="Left"
+                          VerticalAlignment="Top"
+                          Margin="20,5,0,0"
                           >Adatbázis</TextBlock>
             </Grid>
         </StackPanel>
@@ -174,8 +192,9 @@
                     Height="auto"
                     Width="auto" 
                     Background="LightGoldenrodYellow"
-                    BorderBrush="White" 
                     Foreground="DarkSlateGray"
+                    BorderThickness="2"
+                    BorderBrush="Black"
                     IsTabStop="False">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock VerticalAlignment="Center" 
