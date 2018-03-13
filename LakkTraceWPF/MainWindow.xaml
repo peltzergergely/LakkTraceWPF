@@ -10,15 +10,30 @@
         ResizeMode="NoResize" 
         WindowState="Maximized" 
         WindowStartupLocation="CenterScreen" 
-        WindowStyle="None" FontFamily="Verdana" 
-        Background="#FDFDFD">
-    <Grid >
+        WindowStyle="None" 
+        FontFamily="Verdana" 
+        Background="#FDFDFD" 
+        Closing="onClose">
+    <Grid>
         <StackPanel x:Name="mainStackPanel" Background="White">
-            <Label Content="Lakkozó Traceability" 
+            <Grid Background="#00363a">
+                <Label Content="Lakkozó Traceability" 
                    Padding="10" 
-                   FontSize="25" 
-                   Background="#00363a" 
-                   Foreground="white" />
+                   FontSize="25"
+                   Foreground="white" 
+                   HorizontalAlignment="Left"
+                   FontWeight="Bold"
+                   />
+
+                <Label x:Name="clockLbl"
+                   Content="Digit clock" 
+                   Padding="10" 
+                   FontSize="25"
+                   Foreground="white" 
+                   HorizontalAlignment="Right"
+                   FontWeight="Bold"
+                   />
+            </Grid>
             <Label Content="Olvasd be a termék majd a keret vonalkódját!" 
                    HorizontalContentAlignment="Center"
                    Padding="30" FontSize="35"
@@ -26,52 +41,33 @@
                    Foreground="white"/>
         </StackPanel>
 
-        <StackPanel Orientation="Horizontal"
-                    HorizontalAlignment="Center" 
-                    VerticalAlignment="Top" 
-                    Margin="0,200,0,0">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="400" />
-                    <ColumnDefinition Width="1100" />
-                    <ColumnDefinition Width="200
-                                      " />
-                </Grid.ColumnDefinitions>
+        <Grid HorizontalAlignment="Center"
+                  VerticalAlignment="Top"
+                  Margin="0 400 0 0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="600" />
+                <ColumnDefinition Width="700" />
+                <ColumnDefinition Width="600" />
+            </Grid.ColumnDefinitions>
 
-                <TextBlock Grid.Row="0"
+            <TextBlock Grid.Row="0"
                           Grid.Column="0"
                           FontSize="35" 
                           HorizontalAlignment="Right"
                           Margin="30,15">
                     Termék DataMatrix</TextBlock>
-                <TextBlock Grid.Row="1"
+            <TextBlock Grid.Row="1"
                           Grid.Column="0"
                           FontSize="35" 
                           HorizontalAlignment="Right" Margin="30,15">
-                    Keret DataMátrix</TextBlock>
-                <DataGrid x:Name="dataGridView1" 
-                          Grid.Row="2"
-                          Grid.Column="0" 
-                          Grid.ColumnSpan="2" 
-                          Height="auto"
-                          Width="1000"
-                          FontSize="20" 
-                          HorizontalAlignment="Stretch" 
-                          ColumnWidth="0.25*"
-                          RowHeaderWidth="0"
-                          BorderThickness="0"
-                          IsEnabled="False"
-                          >
-                </DataGrid>
-                <TextBox x:Name="productTxbx"
+                    Keret DataMatrix</TextBlock>
+
+            <TextBox x:Name="productTxbx"
                          Grid.Row="0"
                          Grid.Column="1" 
                          FontSize="35" 
@@ -79,7 +75,7 @@
                          IsTabStop="True"
                          TabIndex="0"
                          KeyUp="TxtBxKeyUpEvent"></TextBox>
-                <TextBox x:Name="carrierTxbx"
+            <TextBox x:Name="carrierTxbx"
                          Grid.Row="1" 
                          Grid.Column="1" 
                          FontSize="35" 
@@ -87,43 +83,237 @@
                          IsTabStop="True" 
                          TabIndex="1"
                          KeyUp="TxtBxKeyUpEvent"></TextBox>
-                <TextBlock x:Name="productLbl"
-                          Grid.Row="3"
-                          Grid.Column="0"
-                          FontSize="35" 
-                          Grid.ColumnSpan="2" 
-                          HorizontalAlignment="Center"
-                          VerticalAlignment="Top"
-                          Margin="30,15">Termék</TextBlock>
-                <TextBlock x:Name="carrierLbl"
-                          Grid.Row="4"
-                          Grid.Column="0"
-                          FontSize="35" 
-                          Grid.ColumnSpan="2" 
-                          HorizontalAlignment="Center"
-                          VerticalAlignment="Bottom"
-                          Margin="30,15"
-                          >Keret</TextBlock>
-                <TextBlock x:Name="dbresultLbl"
-                          Grid.Row="5"
-                          Grid.Column="0"
-                          FontSize="35" 
-                          Grid.ColumnSpan="2" 
-                          HorizontalAlignment="Center"
-                          VerticalAlignment="Bottom"
-                          Margin="30,15"
-                          >Adatbázis</TextBlock>
-                <TextBlock x:Name="dailyProductionLbl"
+            <TextBlock x:Name="productLbl"
                           Grid.Row="0"
-                          Grid.RowSpan="3"
-                          Grid.Column="3"
-                          FontSize="18" 
+                          Grid.Column="2"
+                          FontSize="35" 
                           Grid.ColumnSpan="2" 
                           HorizontalAlignment="Left"
                           VerticalAlignment="Top"
-                          Margin="20,5,0,0"
-                          >Adatbázis</TextBlock>
-            </Grid>
+                          Margin="30,15">Termék output</TextBlock>
+            <TextBlock x:Name="carrierLbl"
+                          Grid.Row="1"
+                          Grid.Column="2"
+                          FontSize="35" 
+                          Grid.ColumnSpan="2" 
+                          HorizontalAlignment="left"
+                          VerticalAlignment="Bottom"
+                          Margin="30,15"
+                          >Keret output</TextBlock>
+        </Grid>
+        <TextBlock x:Name="dbresultLbl"
+                          FontSize="35"
+                          Grid.ColumnSpan="2" 
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Top"
+                          Margin="0 600 0 0"
+                          >Adatbázis output</TextBlock>
+       
+        <StackPanel HorizontalAlignment="Left"
+                    VerticalAlignment="Bottom"
+                    Width="420"
+                    Height="210"
+                    Margin="500 0 0 50">
+         
+            <Label  Content="Lakk"
+                        FontSize="30"
+                        Foreground="DarkSlateGray"
+                        VerticalContentAlignment="Center"
+                        HorizontalContentAlignment="Center"/>
+
+            <Border BorderThickness="2" 
+                        BorderBrush="DarkSlateGray">
+                <Grid Height="160">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Label  Content="Batch"
+                                FontSize="25"
+                                FontStyle="Italic"
+                                Foreground="DarkSlateGray"
+                                Grid.Column="0"
+                                Grid.Row="0"
+                                VerticalContentAlignment="Center"
+                                HorizontalContentAlignment="Right"
+                                />
+
+                    <Label  Content="Lejárat"
+                                FontSize="25"
+                                FontStyle="Italic"
+                                Foreground="DarkSlateGray"
+                                Grid.Column="0"
+                                Grid.Row="1"
+                                VerticalContentAlignment="Center"
+                                HorizontalContentAlignment="Right"
+                                />
+                    <Label  Content="Beviteli dátum"
+                                FontSize="25"
+                                FontStyle="Italic"
+                                Foreground="DarkSlateGray"
+                                Grid.Column="0"
+                                Grid.Row="2"
+                                VerticalContentAlignment="Center"
+                                HorizontalContentAlignment="Right"
+                                />
+                    <Label  x:Name="batchName"
+                                Content="BatchOUT"
+                                FontSize="35"
+                                FontWeight="Bold"
+                                Foreground="DarkSlateGray"
+                                Grid.Column="1"
+                                Grid.Row="0"
+                                VerticalContentAlignment="Center"
+                                HorizontalContentAlignment="Left"
+                                />
+
+                    <Label  x:Name="batchExpDate"
+                                Content="ExpOUT"
+                                FontSize="35"
+                                FontWeight="Bold"
+                                Foreground="DarkSlateGray"
+                                Grid.Column="1"
+                                Grid.Row="1"
+                                VerticalContentAlignment="Center"
+                                HorizontalContentAlignment="Left"
+                                />
+
+                    <Label  x:Name="batchLoadDate"
+                                Content="DateOUT"
+                                FontSize="35"
+                                FontWeight="Bold"
+                                Foreground="DarkSlateGray"
+                                Grid.Column="1"
+                                Grid.Row="2"
+                                VerticalContentAlignment="Center"
+                                HorizontalContentAlignment="Left"
+                                />
+
+
+
+                </Grid>
+            </Border>
+        </StackPanel>
+
+        <StackPanel HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    Width="420"
+                    Height="210"
+                    Margin="0 0 500 50"
+                    >
+            <Label  Content="Mai statisztika"
+                                FontSize="30"
+                                Foreground="DarkSlateGray"
+                                VerticalContentAlignment="Center"
+                                HorizontalContentAlignment="Center"
+                                />
+            <Border BorderThickness="2" 
+                    BorderBrush="DarkSlateGray">
+                <Grid Height="160">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Label  Content="BMW"
+                            FontSize="25"
+                            FontStyle="Italic"
+                            Foreground="DarkSlateGray"
+                            Grid.Column="0"
+                            Grid.Row="0"
+                            VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Right"
+                            />
+
+                    <Label  Content="VOLVO"
+                            FontSize="25"
+                            FontStyle="Italic"
+                            Foreground="DarkSlateGray"
+                            Grid.Column="0"
+                            Grid.Row="1"
+                            VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Right"
+                            />
+                    <Label  Content="Összesen"
+                            FontSize="25"
+                            FontStyle="Italic"
+                            Foreground="DarkSlateGray"
+                            Grid.Column="1"
+                            Grid.Row="2"
+                            VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Center"
+                            />
+                    
+                    <Label  Content="Itt"
+                            FontSize="25"
+                            FontStyle="Italic"
+                            Foreground="DarkSlateGray"
+                            Grid.Column="2"
+                            Grid.Row="2"
+                            VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Center"
+                            />
+                    <Label  x:Name="BMWsum"
+                            Content="0"
+                            FontSize="35"
+                            FontWeight="Bold"
+                            Foreground="DarkSlateGray"
+                            Grid.Column="1"
+                            Grid.Row="0"
+                            VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Center"
+                            />
+
+                    <Label  x:Name="VOLVOsum"
+                            Content="0"
+                            FontSize="35"
+                            FontWeight="Bold"
+                            Foreground="DarkSlateGray"
+                            Grid.Column="1"
+                            Grid.Row="1"
+                            VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Center"
+                            />
+                   
+                    <Label  x:Name="VOLVOtoday"
+                            Content="0"
+                            FontSize="35"
+                            FontWeight="Bold"
+                            Foreground="DarkSlateGray"
+                            Grid.Column="2"
+                            Grid.Row="1"
+                            VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Center"
+                            />
+                    <Label  x:Name="BMWtoday"
+                            Content="0"
+                            FontSize="35"
+                            FontWeight="Bold"
+                            Foreground="DarkSlateGray"
+                            Grid.Column="2"
+                            Grid.Row="0"
+                            VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Center"
+                            />
+
+
+
+                </Grid>
+            </Border>
         </StackPanel>
 
         <StackPanel VerticalAlignment="Bottom" 
@@ -136,10 +326,11 @@
                     VerticalAlignment="Bottom" 
                     Height="auto" 
                     Width="auto" 
-                    Background="AliceBlue"
+                    Background="#FDFDFD"
                     BorderBrush="White" 
                     Foreground="DarkSlateGray"
-                    IsTabStop="False">
+                    IsTabStop="False"
+                    Click="DbBtn_Click">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock VerticalAlignment="Center"
                                Margin="5" 
@@ -195,7 +386,8 @@
                     Foreground="DarkSlateGray"
                     BorderThickness="2"
                     BorderBrush="Black"
-                    IsTabStop="False">
+                    IsTabStop="False"
+                    Click="LakkBtn_Click">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock VerticalAlignment="Center" 
                                Margin="5"
@@ -226,10 +418,11 @@
                                Margin="5" 
                                HorizontalAlignment="Left"
                                FontFamily="Segoe MDL2 Assets" 
-                               FontSize="48" Padding="2" >&#xE74E;</TextBlock>
+                               FontSize="48" 
+                               Padding="2" >&#xE74E;</TextBlock>
                     <TextBlock VerticalAlignment="Center" 
                                HorizontalAlignment="Right"
-                               FontSize="25" 
+                               FontSize="25"
                                Padding="2">Mentés</TextBlock>
                 </StackPanel>
             </Button>
