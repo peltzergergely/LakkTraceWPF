@@ -74,6 +74,8 @@
                          Margin="30,15"
                          IsTabStop="True"
                          TabIndex="0"
+                         HorizontalContentAlignment="Center"
+                         VerticalContentAlignment="Center"
                          KeyUp="TxtBxKeyUpEvent"></TextBox>
             <TextBox x:Name="carrierTxbx"
                          Grid.Row="1" 
@@ -82,6 +84,8 @@
                          Margin="30,15"
                          IsTabStop="True" 
                          TabIndex="1"
+                         HorizontalContentAlignment="Center"
+                         VerticalContentAlignment="Center"
                          KeyUp="TxtBxKeyUpEvent"></TextBox>
             <TextBlock x:Name="productLbl"
                           Grid.Row="0"

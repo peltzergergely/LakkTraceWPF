@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -33,10 +34,17 @@ namespace LakkTraceWPF
             InitializeComponent();
             DailyProduction();
             VarnishDisplay();
+            SettingUpTheParameters();
+        }
+
+        private void SettingUpTheParameters()
+        {
+            //clear the texts
             productLbl.Text = "";
             carrierLbl.Text = "";
             dbresultLbl.Text = "";
 
+            //Digit clock timer
             Timer.Tick += new EventHandler(Timer_Click);
             Timer.Interval = new TimeSpan(0, 0, 1);
             Timer.Start();
@@ -146,7 +154,6 @@ namespace LakkTraceWPF
             {
                 try
                 {
-                    //SqlConnection cnn = new SqlConnection(connetionstringgen2);
                     SqlConnection cnn = new SqlConnection(ConfigurationManager.ConnectionStrings["deltaTecServer"].ConnectionString);
                     cnn.Open();
                     string StrQuery1m;
@@ -171,7 +178,6 @@ namespace LakkTraceWPF
         {
             try
             {
-                //SqlConnection cnn = new SqlConnection(connetionstringgen2);
                 SqlConnection cnn = new SqlConnection(ConfigurationManager.ConnectionStrings["deltaTecServer"].ConnectionString);
                 cnn.Open();
                 string StrQuery1m;
@@ -277,6 +283,15 @@ namespace LakkTraceWPF
         // Turns form red and keeps error message displayed on attempt to send wrong data
         private void FormErrorDisplay()
         {
+            new Thread(() =>
+            {
+                Thread.CurrentThread.IsBackground = true;
+                for (int i = 0; i < 1; i++)
+                {
+                    Console.Beep(5000, 500);
+                }
+            }).Start();
+
             productLbl.Text =productTxbx.Text;
             productLbl.Foreground = Brushes.White;
             productLbl.FontWeight = FontWeights.Normal;
@@ -465,7 +480,7 @@ namespace LakkTraceWPF
                 conn.Open();
 
                 string mchName = Environment.MachineName.ToString();
-                if (mchName == "DESKTOP-7L1HPPN" || mchName == "VES9-W00071")
+                if (mchName == "DESKTOP-7L1HPPN")
                     mchName = "old_lakk_pc";
 
                 var batch = new NpgsqlCommand("SELECT batch" + " FROM lakk where workstation = '" + mchName + "' order by timestamp desc limit 1", conn);
@@ -524,6 +539,7 @@ namespace LakkTraceWPF
             LacquerLoad window = new LacquerLoad();
             window.Owner = this;
             window.Show();
+            productTxbx.Focus();
         }
     }
 

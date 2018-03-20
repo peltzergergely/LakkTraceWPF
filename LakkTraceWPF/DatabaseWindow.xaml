@@ -11,14 +11,14 @@
         WindowState="Maximized" 
         WindowStartupLocation="CenterScreen" 
         WindowStyle="None" FontFamily="Verdana" 
-        Background="#FDFDFD">
-    
+        Background="#FDFDFD" KeyDown="OnKeyDown">
+
     <Window.Resources>
         <Style x:Key="DGHeaderStyle" TargetType="{x:Type DataGrid}">
             <Setter Property="ColumnHeaderStyle" Value="{DynamicResource DGCHeaderStyle}"/>
         </Style>
         <Style x:Key="DGCHeaderStyle" TargetType="DataGridColumnHeader">
-            <Setter Property="Height" Value="30"/> 
+            <Setter Property="Height" Value="30"/>
             <Setter Property="FontSize" Value="15"/>
             <Setter Property="Background" Value="#FFF4F5F7"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
@@ -29,8 +29,9 @@
         <Style TargetType="DataGridCell">
             <Setter Property="HorizontalAlignment" Value="Center" />
         </Style>
+
     </Window.Resources>
-    
+
     <Grid>
         <StackPanel x:Name="mainStackPanel" Background="White">
             <Label Content="Adatbázis" 
@@ -44,7 +45,7 @@
                    Padding="30" FontSize="35"
                    Background="#006064"
                    Foreground="white"/>
-            
+
             <Grid Background="#FF008F95">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="2*"/>
@@ -102,7 +103,7 @@
                        HorizontalAlignment="Center"
                        FontSize="20"
                        Foreground="White"/>
-                
+
                 <Border BorderBrush="DarkSlateGray" 
                         BorderThickness="0 0 1 0"
                         Grid.Column="0"
@@ -137,7 +138,7 @@
                          Grid.Row="1">
                     <DatePicker BorderThickness="0" 
                                 Background="White" 
-                                Width="141"
+                                Width="169"
                                 x:Name="startDate"
                                 VerticalContentAlignment="Center"
                                 HorizontalContentAlignment="Center">
@@ -149,17 +150,17 @@
                         Grid.Column="4"
                          Grid.Row="1">
 
-                    <Viewbox >
+                    <Viewbox>
                         <DatePicker BorderThickness="0" 
                                 Background="White" 
-                                Width="141"
+                                Width="166"
                                 x:Name="endDate"
                                 VerticalContentAlignment="Center"
                                 HorizontalContentAlignment="Center"/>
                     </Viewbox>
 
                 </Border>
-                
+
                 <Label Content="0" 
                        Grid.Column="5"
                        Grid.Row="1"
@@ -180,13 +181,6 @@
                       VerticalGridLinesBrush="white"
                       HorizontalGridLinesBrush="white">
             </DataGrid>
-            <ProgressBar Height="15" 
-                         IsIndeterminate="True" 
-                         Visibility="Hidden"
-                         x:Name="loadingBar"
-                         BorderThickness="0"
-                         Foreground="#FF008F95"
-                         Background="#FDFDFD"/>
 
         </StackPanel>
         <Button x:Name="BackBtn"
