@@ -135,7 +135,6 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <Resource Include="images\icon.ico" />
   </ItemGroup>

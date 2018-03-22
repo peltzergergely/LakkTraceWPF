@@ -156,7 +156,8 @@
                                 Width="166"
                                 x:Name="endDate"
                                 VerticalContentAlignment="Center"
-                                HorizontalContentAlignment="Center"/>
+                                HorizontalContentAlignment="Center"
+                                />
                     </Viewbox>
 
                 </Border>

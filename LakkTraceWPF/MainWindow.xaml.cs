@@ -8,9 +8,7 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
-
-
+using System.Runtime.InteropServices;
 
 namespace LakkTraceWPF
 {
@@ -21,20 +19,20 @@ namespace LakkTraceWPF
     {
         public bool IsProductValidated { get; set; }
         public bool IsCarrierValidated { get; set; }
+        public bool IsMsgBoxVisible { get; set; }
         private string heatsinkID { get; set; }
         private string mainboardID { get; set; }
-        //private string connetionstringgen2 = "Data Source=10.207.40.200;Initial Catalog=Gen2;Persist Security Info=True;User ID=GEN2;Password=1234";
-        System.Windows.Threading.DispatcherTimer Timer = new System.Windows.Threading.DispatcherTimer();
 
+        System.Windows.Threading.DispatcherTimer DigitClockTimer = new System.Windows.Threading.DispatcherTimer();
 
         public MainWindow()
         {
             //make first textbox focused
             Loaded += (sender, e) => MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
             InitializeComponent();
+            SettingUpTheParameters();
             DailyProduction();
             VarnishDisplay();
-            SettingUpTheParameters();
         }
 
         private void SettingUpTheParameters()
@@ -45,16 +43,40 @@ namespace LakkTraceWPF
             dbresultLbl.Text = "";
 
             //Digit clock timer
-            Timer.Tick += new EventHandler(Timer_Click);
-            Timer.Interval = new TimeSpan(0, 0, 1);
-            Timer.Start();
+            DigitClockTimer.Tick += new EventHandler(Timer_Click);
+            DigitClockTimer.Interval = new TimeSpan(0, 0, 1);
+            DigitClockTimer.Start();
+
+            // Message Box hide
+            MsgBox.Visibility = Visibility.Hidden;
+
+            //hide MessageBox by default
+            IsMsgBoxVisible = false;
+
         }
 
         private void Timer_Click(object sender, EventArgs e)
         {
             DateTime d;
             d = DateTime.Now;
-            clockLbl.Content = d.Hour + ":" + d.Minute + ":" + d.Second;
+            string h = "", m = "", s= "";
+
+            if (d.Hour < 10)
+                h = "0" + d.Hour.ToString();
+            else
+                h = d.Hour.ToString();
+
+            if (d.Minute < 10)
+                m = "0" + d.Minute.ToString();
+            else
+                m = d.Minute.ToString();
+
+            if (d.Second < 10)
+                s = "0" + d.Second.ToString();
+            else
+                s = d.Second.ToString();
+
+            clockLbl.Content = h + ":" + m + ":" + s;
         }
 
         // Cancel the close
@@ -86,18 +108,10 @@ namespace LakkTraceWPF
 
                 if (keyboardFocus != null)
                 {
-                    if(IsProductValidated)
+                     if (HsOrMbOrLa())
                         keyboardFocus.MoveFocus(tRequest);
-                    else
-                    {
-                        productLbl.Text = productTxbx.Text;
-                        productLbl.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#000000"));
-                        productTxbx.Text = "";
-                        dbresultLbl.Text = "NEM MEGFELELŐ VONALKÓDOT OLVASTÁL BE!";
-                        dbresultLbl.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFFF0505"));
-                        dbresultLbl.FontWeight = FontWeights.UltraBold;
-                    }
                 }
+
                 e.Handled = true;
 
                 if (IsBothValid())
@@ -113,20 +127,20 @@ namespace LakkTraceWPF
             }
 
             if (Keyboard.FocusedElement == productTxbx && productTxbx.Text.Length > 0) //calls the validator for the field in focus
-            {
-                HsOrMb();
-                ProductValidator();                
+            {   
+                ProductValidator();
             }
 
             if (Keyboard.FocusedElement == carrierTxbx && carrierTxbx.Text.Length > 0)
             {
                 CarrierValidator();
             }
+
         }
 
-        private void HsOrMb()
+        private bool HsOrMbOrLa()
         {
-            if (productTxbx.Text.Length == 12) //gen2 heatsink lenght gives the mainboard DM from the heatsink DM
+            if (productTxbx.Text.Length == 12 && !IsMsgBoxVisible) //gen2 heatsink lenght gives the mainboard DM from the heatsink DM
             {
                 try
                 {
@@ -142,15 +156,17 @@ namespace LakkTraceWPF
                     string mbid = dtm.Rows[0]["MainBoard_ID"].ToString();
                     heatsinkID = productTxbx.Text;
                     mainboardID = mbid;
-
                     productTxbx.Text = mainboardID;
+                    ProductValidator();
+                    return true;
                 }
                 catch (Exception msg)
                 {
                     MessageBox.Show(msg.ToString());
+                    return false;
                 }
             }
-            else if (productTxbx.Text.Length > 23) //gen2 mainboard dm length
+            else if (productTxbx.Text.Length == 24 && !IsMsgBoxVisible)
             {
                 try
                 {
@@ -171,8 +187,50 @@ namespace LakkTraceWPF
                 {
                     MessageBox.Show(msg.ToString());
                 }
+                return true;
+            }
+            else if (productTxbx.Text.Length == ConfigurationManager.AppSettings["lacquerApproval"].Length && IsMsgBoxVisible)
+            {
+                string pw = ConfigurationManager.AppSettings["lacquerApproval"];
+                if (Regex.IsMatch(productTxbx.Text, pw))
+                {
+                    MsgBoxHide();
+                }
+                else
+                {
+                    InvalidInput("LAKKOT ELLENŐRIZNI KELL, SZÓLJ A MŰSZAKVEZETŐNEK!");
+                }
+                return false;
+            }
+            else
+            {
+                if (IsMsgBoxVisible)
+                    InvalidInput("LAKKOT ELLENŐRIZNI KELL, SZÓLJ A MŰSZAKVEZETŐNEK!");
+                else
+                {
+
+                }
+                    InvalidInput("NEM MEGFELELŐ VONALKÓDOT OLVASTÁL BE!");
+                return false;
             }
         }
+
+        private void InvalidInput(string msg)
+        {
+            if (productTxbx.Text.Length != 0)
+            {
+                ErrorSound(3); // 3 -> number of beeps
+                productLbl.Text = productTxbx.Text;
+                productLbl.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFFF0505"));
+                productLbl.FontWeight = FontWeights.Normal;
+                productTxbx.Text = "";
+                dbresultLbl.Text = msg;
+                dbresultLbl.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFFF0505"));
+                dbresultLbl.FontWeight = FontWeights.UltraBold;
+            }
+        }
+
+
 
         private bool PreCheck()
         {
@@ -210,6 +268,8 @@ namespace LakkTraceWPF
         // Syntax check of the product
         private void ProductValidator()
         {
+            this.mainStackPanel.Background = new SolidColorBrush(Colors.White);
+            dbresultLbl.Text = "";
 
             if (RegexValidation(productTxbx.Text, "productTxbx"))
             {
@@ -232,18 +292,14 @@ namespace LakkTraceWPF
         {
             if (RegexValidation(carrierTxbx.Text, "carrierTxbx"))
             {
-                //carrierLbl.Text = carrierTxbx.Text;
                 IsCarrierValidated = true;
-
                 carrierLbl.Text = "OK";
                 carrierLbl.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FF09E409"));
                 carrierLbl.FontWeight = FontWeights.UltraBold;
             }
             else
             {
-                //carrierLbl.Text = "Keret DataMatrix nem megfelelő!";
                 IsCarrierValidated = false;
-
                 carrierLbl.Text = "Nem megfelelő!";
                 carrierLbl.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFFF0505"));
                 carrierLbl.FontWeight = FontWeights.Normal;
@@ -280,17 +336,22 @@ namespace LakkTraceWPF
             this.mainStackPanel.Background = new SolidColorBrush(Colors.White);
         }
 
-        // Turns form red and keeps error message displayed on attempt to send wrong data
-        private void FormErrorDisplay()
+        private void ErrorSound(int numberOfBeeps)
         {
             new Thread(() =>
             {
                 Thread.CurrentThread.IsBackground = true;
-                for (int i = 0; i < 1; i++)
+                for (int i = 0; i < numberOfBeeps; i++)
                 {
                     Console.Beep(5000, 500);
                 }
             }).Start();
+        }
+
+        // Turns form red and keeps error message displayed on attempt to send wrong data
+        private void FormErrorDisplay()
+        {
+            ErrorSound(5);
 
             productLbl.Text =productTxbx.Text;
             productLbl.Foreground = Brushes.White;
@@ -339,33 +400,42 @@ namespace LakkTraceWPF
             var cmd = new NpgsqlCommand("SELECT COUNT(*) FROM " + table + " WHERE prod_dm = :prod_dm", conn);
             cmd.Parameters.Add(new NpgsqlParameter("prod_dm", productTxbx.Text));
             Int32 countProd = Convert.ToInt32(cmd.ExecuteScalar());
-            conn.Close();
-
+            
             if (countProd == 0) // If the product DM is not in the DB and is TOP side up then uploads
             {
-                if (GetCarrierSide() == "TOP")
-                {
-                    DbInsert(table);
-                }
-                else
-                {
-                    dbresultLbl.Text = "TOP OLDALT LAKKOZD ELŐSZÖR!";
-                    FormErrorDisplay();
-                }
+                DbInsert(table);
             }
             else if (countProd == 1) // Only allows BOT if it's already in the DB (see above)
             {
-                if (GetCarrierSide() == "BOT")
+                var carrFromDb = new NpgsqlCommand("SELECT carr_dm FROM " + table + " WHERE prod_dm = '" + productTxbx.Text + "'", conn);
+                string carr = carrFromDb.ExecuteScalar().ToString();
+
+                if (carr.Contains("BOT")) //BOT side is already in DB, only TOP will be accepted
                 {
-                    DbInsert(table);
+                    if (GetCarrierSide() == "TOP")
+                    {
+                        DbInsert(table);
+                    }
+                    else
+                    {
+                        dbresultLbl.Text = "ENNEK A TERMÉKNEK A BOT OLDALA MÁR LAKKOZVA LETT";
+                        FormErrorDisplay();
+                        DateIntoErrorMessage(table);
+                    }
                 }
-                else
+                else // TOP side is already in DB, only BOT will be accepted
                 {
-                    dbresultLbl.Text = "ENNEK A TERMÉKNEK EZ AZ OLDALA MÁR LAKKOZVA LETT";
-                    FormErrorDisplay();
-                    DateIntoErrorMessage(table);
-                }
-                
+                    if (GetCarrierSide() == "BOT")
+                    {
+                        DbInsert(table);
+                    }
+                    else
+                    {
+                        dbresultLbl.Text = "ENNEK A TERMÉKNEK A TOP OLDALA MÁR LAKKOZVA LETT";
+                        FormErrorDisplay();
+                        DateIntoErrorMessage(table);
+                    }
+                }               
             }
             else // By this time product should be finished
             {
@@ -373,6 +443,7 @@ namespace LakkTraceWPF
                 FormErrorDisplay();
                 DateIntoErrorMessage(table);
             }
+            conn.Close();
         }
 
         private void DateIntoErrorMessage(string table)
@@ -418,6 +489,8 @@ namespace LakkTraceWPF
                 dbresultLbl.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FF09E409"));
                 dbresultLbl.FontWeight = FontWeights.UltraBold;
                 FormCleanerOnUploadFinished();
+                DailyProduction();
+                VarnishDisplay();
             }
             catch (Exception msg)
             {
@@ -447,7 +520,11 @@ namespace LakkTraceWPF
             cmd = new NpgsqlCommand("SELECT COUNT(*) FROM volvo WHERE timestamp > 'today' AND workstation = '" + machineName + "'", conn);
             Int32 todayCountVolvo = Convert.ToInt32(cmd.ExecuteScalar());
 
+            cmd = new NpgsqlCommand("SELECT COUNT(*) FROM volvo WHERE workstation = '" + machineName + "'", conn);
+            Int32 loadLacquerLoadCounter = Convert.ToInt32(cmd.ExecuteScalar());
+            cmd = new NpgsqlCommand("SELECT COUNT(*) FROM bmw WHERE workstation = '" + machineName + "'", conn);
             conn.Close();
+
 
             BMWsum.Content = countbmw.ToString();
             BMWtoday.Content = todayCountBmw.ToString();
@@ -455,15 +532,31 @@ namespace LakkTraceWPF
             VOLVOsum.Content = countvolvo.ToString();
             VOLVOtoday.Content = todayCountVolvo.ToString();
 
-            int sum = todayCountBmw + todayCountVolvo;
-            if (sum % 100 == 0)
+            //int sum = todayCountBmw + todayCountVolvo;
+            if (loadLacquerLoadCounter % 100 == 0)
             {
-                MessageBox.Show("Ellenőrizd a lakk mennyiségét! Ha utántöltés szükséges akkor kattints a 'Lakk feltöltése gombra!' ");
-                //MessageBoxWindow window = new MessageBoxWindow("Ellenőrizd a lakk mennyiségét!Ha utántöltés szükséges akkor kattints a 'Lakk feltöltése gombra!' ");
-                //window.Show();
+                MsgBoxShow("Ellenőrizni kell a LAKK mennyiségét, szólj a műszakvezetőnek! Utána folytatódhat a munkafolyamat.");
             }
 
 
+        }
+
+        private void MsgBoxShow(string msg)
+        {
+            MsgBoxMessage.Text = msg;
+            MsgBoxMessage.FontWeight = FontWeights.SemiBold;
+            MsgBox.Visibility = Visibility.Visible;
+            IsMsgBoxVisible = true;
+        }
+
+        private void MsgBoxHide()
+        {
+            MsgBoxMessage.Text = "";
+            MsgBox.Visibility = Visibility.Hidden;
+            IsMsgBoxVisible = false;
+            productTxbx.Text = "";
+            productLbl.Text = "";
+            dbresultLbl.Text = "";
         }
 
         // Shows the current varnish in a gridView
@@ -516,9 +609,7 @@ namespace LakkTraceWPF
                 if (IsBothValid())
                 {
                     DbValidation(GetTableName());
-                }
-                DailyProduction();
-                VarnishDisplay();
+                }                
             }
             else
             {
@@ -541,6 +632,13 @@ namespace LakkTraceWPF
             window.Show();
             productTxbx.Focus();
         }
+
+        private void EscBtn_Click(object sender, RoutedEventArgs e)
+        {
+            MsgBoxHide();
+            productTxbx.Focus();
+        }
+
     }
 
 

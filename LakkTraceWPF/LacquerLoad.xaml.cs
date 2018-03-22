@@ -47,7 +47,7 @@ namespace LakkTraceWPF
             isBatchValid.Text = "";
             isDateValid.Text = "";
             //give the focus for batch textbox
-            batchTbx.Focus();  
+            batchTbx.Focus();
         }
 
         private void BackBtn_Click(object sender, RoutedEventArgs e)
