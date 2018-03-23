@@ -9,6 +9,10 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Runtime.InteropServices;
+using System.IO;
+using System.Diagnostics;
+using System.Reflection;
+using System.Windows.Media.Imaging;
 
 namespace LakkTraceWPF
 {
@@ -19,7 +23,8 @@ namespace LakkTraceWPF
     {
         public bool IsProductValidated { get; set; }
         public bool IsCarrierValidated { get; set; }
-        public bool IsMsgBoxVisible { get; set; }
+        public bool IsLeaderApprovalNeeded { get; set; }
+        public bool IsMsgBoxVisible { get; private set; }
         private string heatsinkID { get; set; }
         private string mainboardID { get; set; }
 
@@ -51,8 +56,7 @@ namespace LakkTraceWPF
             MsgBox.Visibility = Visibility.Hidden;
 
             //hide MessageBox by default
-            IsMsgBoxVisible = false;
-
+            IsLeaderApprovalNeeded = false;
         }
 
         private void Timer_Click(object sender, EventArgs e)
@@ -108,8 +112,17 @@ namespace LakkTraceWPF
 
                 if (keyboardFocus != null)
                 {
-                     if (HsOrMbOrLa())
+                    if (IsMsgBoxVisible && !IsLeaderApprovalNeeded)
+                    {
+                        MsgBoxMessage.Text = "";
+                        MsgBox.Visibility = Visibility.Hidden;
+                        IsLeaderApprovalNeeded = false;
+                        IsMsgBoxVisible = false;
+                    }
+
+                    if (HsOrMbOrLa())
                         keyboardFocus.MoveFocus(tRequest);
+
                 }
 
                 e.Handled = true;
@@ -140,7 +153,7 @@ namespace LakkTraceWPF
 
         private bool HsOrMbOrLa()
         {
-            if (productTxbx.Text.Length == 12 && !IsMsgBoxVisible) //gen2 heatsink lenght gives the mainboard DM from the heatsink DM
+            if (productTxbx.Text.Length == 12 && !IsLeaderApprovalNeeded) //gen2 heatsink lenght gives the mainboard DM from the heatsink DM
             {
                 try
                 {
@@ -162,11 +175,14 @@ namespace LakkTraceWPF
                 }
                 catch (Exception msg)
                 {
-                    MessageBox.Show(msg.ToString());
+                    MsgBoxShow("Hiba történt! Részletek elmentve az Errors mappába!", false);
+                    FormCleanerOnUploadFinished();
+                    ErrorSound(3);
+                    ErrorLog.CreateErrorLog(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString());
                     return false;
                 }
             }
-            else if (productTxbx.Text.Length == 24 && !IsMsgBoxVisible)
+            else if (productTxbx.Text.Length == 24 && !IsLeaderApprovalNeeded)
             {
                 try
                 {
@@ -182,14 +198,18 @@ namespace LakkTraceWPF
                     string mbid = dtm.Rows[0]["HeatSink_ID"].ToString();
                     heatsinkID = mbid;
                     mainboardID = productTxbx.Text;
+                    return true;
                 }
                 catch (Exception msg)
                 {
-                    MessageBox.Show(msg.ToString());
+                    MsgBoxShow("Hiba történt! Részletek elmentve az Errors mappába!", false);
+                    FormCleanerOnUploadFinished();
+                    ErrorSound(3);
+                    ErrorLog.CreateErrorLog(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString());
+                    return false;
                 }
-                return true;
             }
-            else if (productTxbx.Text.Length == ConfigurationManager.AppSettings["lacquerApproval"].Length && IsMsgBoxVisible)
+            else if (productTxbx.Text.Length == ConfigurationManager.AppSettings["lacquerApproval"].Length && IsLeaderApprovalNeeded)
             {
                 string pw = ConfigurationManager.AppSettings["lacquerApproval"];
                 if (Regex.IsMatch(productTxbx.Text, pw))
@@ -204,7 +224,7 @@ namespace LakkTraceWPF
             }
             else
             {
-                if (IsMsgBoxVisible)
+                if (IsLeaderApprovalNeeded)
                     InvalidInput("LAKKOT ELLENŐRIZNI KELL, SZÓLJ A MŰSZAKVEZETŐNEK!");
                 else
                 {
@@ -253,7 +273,10 @@ namespace LakkTraceWPF
             }
             catch (Exception msg)
             {
-                MessageBox.Show(msg.ToString());
+                MsgBoxShow("Hiba történt! Részletek elmentve az Errors mappába!", false);
+                FormCleanerOnUploadFinished();
+                ErrorSound(3);
+                ErrorLog.CreateErrorLog(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString());
                 return false;
             }
         }
@@ -494,7 +517,10 @@ namespace LakkTraceWPF
             }
             catch (Exception msg)
             {
-                MessageBox.Show(msg.ToString());
+                MsgBoxShow("Hiba történt! Részletek elmentve az Errors mappába!", false);
+                FormCleanerOnUploadFinished();
+                ErrorSound(3);
+                ErrorLog.CreateErrorLog(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString());
             }
         }
 
@@ -532,20 +558,21 @@ namespace LakkTraceWPF
             VOLVOsum.Content = countvolvo.ToString();
             VOLVOtoday.Content = todayCountVolvo.ToString();
 
-            //int sum = todayCountBmw + todayCountVolvo;
-            if (loadLacquerLoadCounter % 100 == 0)
+            int sum = todayCountBmw + todayCountVolvo;
+            if (sum % 100 == 0)
             {
-                MsgBoxShow("Ellenőrizni kell a LAKK mennyiségét, szólj a műszakvezetőnek! Utána folytatódhat a munkafolyamat.");
+                MsgBoxShow("Ellenőrizni kell a LAKK mennyiségét, szólj a műszakvezetőnek! Utána folytatódhat a munkafolyamat.",true);
             }
 
 
         }
 
-        private void MsgBoxShow(string msg)
+        private void MsgBoxShow(string msg, bool needapproval)
         {
             MsgBoxMessage.Text = msg;
             MsgBoxMessage.FontWeight = FontWeights.SemiBold;
             MsgBox.Visibility = Visibility.Visible;
+            IsLeaderApprovalNeeded = needapproval;
             IsMsgBoxVisible = true;
         }
 
@@ -553,6 +580,7 @@ namespace LakkTraceWPF
         {
             MsgBoxMessage.Text = "";
             MsgBox.Visibility = Visibility.Hidden;
+            IsLeaderApprovalNeeded = false;
             IsMsgBoxVisible = false;
             productTxbx.Text = "";
             productLbl.Text = "";
@@ -589,9 +617,10 @@ namespace LakkTraceWPF
             }
             catch (Exception msg)
             {
-                // error handling
-                MessageBox.Show(msg.ToString());
-                //throw;
+                MsgBoxShow("Hiba történt! Részletek elmentve az Errors mappába!", false);
+                FormCleanerOnUploadFinished();
+                ErrorSound(3);
+                ErrorLog.CreateErrorLog(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString());
             }
         }
 
@@ -622,7 +651,9 @@ namespace LakkTraceWPF
         private void DbBtn_Click(object sender, RoutedEventArgs e)
         {
             DatabaseWindow window = new DatabaseWindow();
+            window.Owner = this;
             window.Show();
+            productTxbx.Focus();
         }
 
         private void LakkBtn_Click(object sender, RoutedEventArgs e)
@@ -640,6 +671,4 @@ namespace LakkTraceWPF
         }
 
     }
-
-
 }

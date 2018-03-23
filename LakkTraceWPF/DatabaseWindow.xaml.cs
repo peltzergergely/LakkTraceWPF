@@ -6,6 +6,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,6 +19,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+
 
 namespace LakkTraceWPF
 {
@@ -37,7 +39,6 @@ namespace LakkTraceWPF
 
         private void SettingUpTheParameters()
         {
-
             // set back the short date pattern to dd-MM-yyyy after lacquer load (MM-yyyy)
             CultureInfo ci = CultureInfo.CreateSpecificCulture(CultureInfo.CurrentCulture.Name);
             ci.DateTimeFormat.ShortDatePattern = "dd-MM-yyyy";
@@ -103,9 +104,10 @@ namespace LakkTraceWPF
                     setHeaderTexts();
                     resultRowCount.Content = resultDataGrid.Items.Count.ToString();
                 }
-                catch (Exception ex)
+                catch (Exception msg)
                 {
-                    MessageBox.Show(ex.ToString());
+                    MessageBox.Show("Hiba történt! Részletek elmentve az Errors mappába!");
+                    ErrorLog.CreateErrorLog(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString());
                 }
             }
             
@@ -156,10 +158,12 @@ namespace LakkTraceWPF
             {
                 prodDmTbx.IsEnabled = false;
                 prodDmTbx.Text = "";
+                prodDmTbx.Background = Brushes.LightCyan;
             }
             else
             {
                 prodDmTbx.IsEnabled = true;
+                prodDmTbx.Background = Brushes.White;
             }
         }
 

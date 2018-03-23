@@ -12,11 +12,11 @@
         WindowStartupLocation="CenterScreen" 
         WindowStyle="None" 
         FontFamily="Verdana" 
-        Background="#FDFDFD" 
+        Background="#FFD14343" 
         Closing="onClose">
 
     <Grid>
-        <StackPanel x:Name="mainStackPanel" Background="White">
+        <StackPanel x:Name="mainStackPanel" Background="#FFFDFDFD">
             <Grid Background="#00363a">
 
                 <Label Content="Lakkozó Traceability" 
@@ -42,44 +42,38 @@
                    Foreground="white"/>
         </StackPanel>
 
-        
 
-            <Border x:Name="MsgBox"
-                    BorderThickness="2" 
-                    BorderBrush="Red"
+
+        <Border x:Name="MsgBox"
+                    BorderThickness="0 2 0 2" 
+                Padding="10"
+                    BorderBrush="DarkSlateGray"
                     VerticalAlignment="Top"
                     HorizontalAlignment="Center"
                     Margin="0 185 10 0"
                     Visibility="Visible"
                     Width="1200"
                     >
-                    
-                <Grid>
-                    <Grid.ColumnDefinitions>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
-                    <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-
-                <Label Content="Üzenet"
-                       Grid.Row="0"
-                       Grid.Column="0"
-                       FontSize="25"
-                       Foreground="DarkSlateGray"
-                       FontStyle="Italic"
-                       FontWeight="Bold"
-                       VerticalContentAlignment="Center"/>
 
                 <Button x:Name="EscBtn"
                     HorizontalAlignment="Right"
-                    VerticalAlignment="Bottom"
+                    VerticalAlignment="top"
                     Height="auto" Width="auto" 
                     Background="#FDFDFD" 
                     Foreground="DarkSlateGray"
                     Grid.Row="0"
+                    Grid.Column="2"
                     BorderBrush="White"
                     Click="EscBtn_Click">
                     <StackPanel Orientation="Horizontal">
@@ -92,25 +86,33 @@
                     </StackPanel>
                 </Button>
 
-                <TextBox Text="Test message."
+                <Image x:Name="MsgType"
+                       Width="200" 
+                       Source="images/WarningImg.png"
+                       Grid.Row="0"
+                       Grid.Column="0"/>
+
+                <TextBox Text="Test message"
                          x:Name="MsgBoxMessage"
+                         Background="#FDFDFD"
                          TextWrapping="Wrap"
-                         Grid.Column="0"
-                         Grid.Row="1"
+                         Grid.Column="1"
                          FontSize="35"
-                         Margin="20 10 20 10"
+                         Margin="20,10,51,10"
                          Foreground="DarkSlateGray"
                          HorizontalContentAlignment="Center"
+                         VerticalContentAlignment="Center"
                          BorderBrush="White"
                          IsReadOnly="True"
                          Focusable="False" 
-                         Cursor="Arrow"
+                         Cursor="Arrow" Grid.ColumnSpan="2"
                          />
+
             </Grid>
-            </Border>
+        </Border>
 
 
-       
+
 
         <Grid HorizontalAlignment="Center"
                   VerticalAlignment="Top"
@@ -130,12 +132,15 @@
                           Grid.Column="0"
                           FontSize="35" 
                           HorizontalAlignment="Right"
-                          Margin="30,15">
+                          Margin="30,15"
+                          Foreground="DarkSlateGray">
                     Termék DataMatrix</TextBlock>
             <TextBlock Grid.Row="1"
-                          Grid.Column="0"
-                          FontSize="35" 
-                          HorizontalAlignment="Right" Margin="30,15">
+                       Grid.Column="0"
+                       FontSize="35" 
+                       HorizontalAlignment="Right" 
+                       Margin="30,15"
+                       Foreground="DarkSlateGray">
                     Keret DataMatrix</TextBlock>
 
             <TextBox x:Name="productTxbx"
@@ -183,13 +188,13 @@
                           VerticalAlignment="Top"
                           Margin="0 650 0 0"
                           >Adatbázis output</TextBlock>
-       
+
         <StackPanel HorizontalAlignment="Left"
                     VerticalAlignment="Bottom"
                     Width="420"
                     Height="210"
                     Margin="500 0 0 50">
-         
+
             <Label  Content="Lakk"
                         FontSize="30"
                         Foreground="DarkSlateGray"
@@ -332,7 +337,7 @@
                             VerticalContentAlignment="Center"
                             HorizontalContentAlignment="Center"
                             />
-                    
+
                     <Label  Content="Itt"
                             FontSize="25"
                             FontStyle="Italic"
@@ -363,7 +368,7 @@
                             VerticalContentAlignment="Center"
                             HorizontalContentAlignment="Center"
                             />
-                   
+
                     <Label  x:Name="VOLVOtoday"
                             Content="0"
                             FontSize="35"

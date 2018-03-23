@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -100,7 +101,8 @@ namespace LakkTraceWPF
             }
             catch (Exception msg)
             {
-                MessageBox.Show(msg.ToString());
+                MessageBox.Show("Hiba történt! Részletek elmentve a log file-ba!");
+                ErrorLog.CreateErrorLog(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString());
             }
         }
 

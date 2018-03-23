@@ -33,7 +33,7 @@
     </Window.Resources>
 
     <Grid>
-        <StackPanel x:Name="mainStackPanel" Background="White">
+        <StackPanel x:Name="mainStackPanel" Background="#FFFDFDFD">
             <Label Content="Adatbázis" 
                    Padding="10" 
                    FontSize="25" 

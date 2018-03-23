@@ -15,7 +15,7 @@
         Background="#FDFDFD">
 
     <Grid>
-        <StackPanel x:Name="mainStackPanel" Background="White">
+        <StackPanel x:Name="mainStackPanel" Background="#FFFDFDFD">
             
             <Label Content="Lakk anyag felvitel" 
                    Padding="10" 
@@ -37,12 +37,14 @@
                            HorizontalAlignment="Right"
                            Margin="30,15"
                            Text="Batch"
+                           Foreground="DarkSlateGray"
                            />
                 <TextBox x:Name="batchTbx"
                          FontSize="35" 
                          Margin="30,15"
-                         Width="400" TextChanged="BatchValidator" KeyUp="batchTbxKeyUpEvent"
-                         
+                         Width="400" 
+                         TextChanged="BatchValidator" 
+                         KeyUp="batchTbxKeyUpEvent"                         
                          />
             </StackPanel>
 
@@ -51,6 +53,7 @@
                            HorizontalAlignment="Right"
                            Margin="30,15"
                            Text="Lejárat"
+                           Foreground="DarkSlateGray"
                            />
                 <Viewbox Width="400" Height=" 100">
                     <DatePicker BorderThickness="0" 
@@ -61,6 +64,7 @@
                                 x:Name="expiryDate" 
                                 SelectedDateChanged="DateValidator" 
                                 FirstDayOfWeek="Monday"
+                                Foreground="DarkSlateGray"
                                 />
                 </Viewbox>
 
