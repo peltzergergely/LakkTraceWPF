@@ -107,7 +107,7 @@ namespace LakkTraceWPF
                 catch (Exception msg)
                 {
                     MessageBox.Show("Hiba történt! Részletek elmentve az Errors mappába!");
-                    ErrorLog.CreateErrorLog(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString());
+                    ErrorLog.Create(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString());
                 }
             }
             

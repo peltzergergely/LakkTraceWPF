@@ -176,9 +176,9 @@ namespace LakkTraceWPF
                 catch (Exception msg)
                 {
                     MsgBoxShow("Hiba történt! Részletek elmentve az Errors mappába!", false);
+                    ErrorLog.Create(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString(), productTxbx.Text, carrierTxbx.Text, mainboardID, heatsinkID);
                     FormCleanerOnUploadFinished();
                     ErrorSound(3);
-                    ErrorLog.CreateErrorLog(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString());
                     return false;
                 }
             }
@@ -203,9 +203,9 @@ namespace LakkTraceWPF
                 catch (Exception msg)
                 {
                     MsgBoxShow("Hiba történt! Részletek elmentve az Errors mappába!", false);
+                    ErrorLog.Create(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString(), productTxbx.Text, carrierTxbx.Text, mainboardID, heatsinkID);
                     FormCleanerOnUploadFinished();
                     ErrorSound(3);
-                    ErrorLog.CreateErrorLog(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString());
                     return false;
                 }
             }
@@ -274,9 +274,9 @@ namespace LakkTraceWPF
             catch (Exception msg)
             {
                 MsgBoxShow("Hiba történt! Részletek elmentve az Errors mappába!", false);
+                ErrorLog.Create(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString(), productTxbx.Text, carrierTxbx.Text, mainboardID, heatsinkID);
                 FormCleanerOnUploadFinished();
                 ErrorSound(3);
-                ErrorLog.CreateErrorLog(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString());
                 return false;
             }
         }
@@ -347,6 +347,8 @@ namespace LakkTraceWPF
         {
             productTxbx.Text = "";
             carrierTxbx.Text = "";
+            heatsinkID = "";
+            mainboardID = "";
             IsProductValidated = false;
             IsCarrierValidated = false;
             productLbl.Text = "";
@@ -518,9 +520,9 @@ namespace LakkTraceWPF
             catch (Exception msg)
             {
                 MsgBoxShow("Hiba történt! Részletek elmentve az Errors mappába!", false);
+                ErrorLog.Create(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString(), productTxbx.Text, carrierTxbx.Text, mainboardID, heatsinkID);
                 FormCleanerOnUploadFinished();
                 ErrorSound(3);
-                ErrorLog.CreateErrorLog(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString());
             }
         }
 
@@ -541,16 +543,17 @@ namespace LakkTraceWPF
             if (machineName == "DESKTOP-7L1HPPN")
                 machineName = "old_lakk_pc";
 
+            //machineName = "DESKTOP-BVFFOIU";
             cmd = new NpgsqlCommand("SELECT COUNT(*) FROM bmw WHERE timestamp > 'today' AND workstation = '" + machineName + "'", conn);
             Int32 todayCountBmw = Convert.ToInt32(cmd.ExecuteScalar());
             cmd = new NpgsqlCommand("SELECT COUNT(*) FROM volvo WHERE timestamp > 'today' AND workstation = '" + machineName + "'", conn);
             Int32 todayCountVolvo = Convert.ToInt32(cmd.ExecuteScalar());
 
             cmd = new NpgsqlCommand("SELECT COUNT(*) FROM volvo WHERE workstation = '" + machineName + "'", conn);
-            Int32 loadLacquerLoadCounter = Convert.ToInt32(cmd.ExecuteScalar());
+            Int32 lacquerLoadCounter = Convert.ToInt32(cmd.ExecuteScalar());
             cmd = new NpgsqlCommand("SELECT COUNT(*) FROM bmw WHERE workstation = '" + machineName + "'", conn);
+            lacquerLoadCounter += Convert.ToInt32(cmd.ExecuteScalar());
             conn.Close();
-
 
             BMWsum.Content = countbmw.ToString();
             BMWtoday.Content = todayCountBmw.ToString();
@@ -558,13 +561,12 @@ namespace LakkTraceWPF
             VOLVOsum.Content = countvolvo.ToString();
             VOLVOtoday.Content = todayCountVolvo.ToString();
 
-            int sum = todayCountBmw + todayCountVolvo;
-            if (sum % 100 == 0)
+            //MessageBox.Show(lacquerLoadCounter.ToString());
+            //int sum = todayCountBmw + todayCountVolvo;
+            if (lacquerLoadCounter % 100 == 0)
             {
                 MsgBoxShow("Ellenőrizni kell a LAKK mennyiségét, szólj a műszakvezetőnek! Utána folytatódhat a munkafolyamat.",true);
             }
-
-
         }
 
         private void MsgBoxShow(string msg, bool needapproval)
@@ -618,9 +620,9 @@ namespace LakkTraceWPF
             catch (Exception msg)
             {
                 MsgBoxShow("Hiba történt! Részletek elmentve az Errors mappába!", false);
+                ErrorLog.Create(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString(), productTxbx.Text, carrierTxbx.Text, mainboardID, heatsinkID);
                 FormCleanerOnUploadFinished();
                 ErrorSound(3);
-                ErrorLog.CreateErrorLog(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString());
             }
         }
 

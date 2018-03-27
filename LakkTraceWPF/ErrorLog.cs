@@ -22,24 +22,31 @@ namespace LakkTraceWPF
             return dirName + "\\"+ functionName + "_" + DateTime.Today.ToString("yyyyMMdd") + "_" + DateTime.Now.ToString("HHmmss", System.Globalization.DateTimeFormatInfo.InvariantInfo)+".xml";
         }
 
-        private static string generateFileInpuit(string errorMessage, string functionName)
+        private static string generateFileInpuit(string errorMessage, string functionName,string prod, string carr, string mID, string hID)
         {
             string input = @"<ErrorMessage> 
                                 <Data> 
                                     <Function>"+functionName+@"</Function> 
                                     <Date>" + DateTime.Today.ToString("yyyy.MM.dd") + @"</Date>
                                     <Time>"+ DateTime.Now.ToString("HH:mm:ss", System.Globalization.DateTimeFormatInfo.InvariantInfo) + @"</Time>
-                                </Data> 
+                                </Data>
+                                <Input>
+                                    <productTxbx.Text>"+prod+ @"</productTxbx.Text>
+                                    <carrierTxbx.Text>" + carr+ @"</carrierTxbx.Text>
+                                    <mainboardID>" + mID + @"</mainboardID>
+                                    <heatsinkID>" + hID + @"</heatsinkID>
+                                </Input>
                                 <Message> 
-                                    "+errorMessage+@"
+                                    " + errorMessage+@"
                                 </Message>
                              </ErrorMessage>";
+            //productTxbx.Text,carrierTxbx.Text,mainboardID,heatsinkID
             return input;
         }
 
-        public static void CreateErrorLog(string functionName, string errorMessage)
+        public static void Create(string functionName, string errorMessage,string prod = "", string carr = "", string mID = "", string hID = "")
         {
-            File.WriteAllText(generateFileName(functionName),generateFileInpuit(errorMessage, functionName));
+            File.WriteAllText(generateFileName(functionName),generateFileInpuit(errorMessage, functionName, prod,carr,mID,hID));
         }
     }
 }
