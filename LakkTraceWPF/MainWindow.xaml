@@ -104,7 +104,7 @@
                          VerticalContentAlignment="Center"
                          BorderBrush="White"
                          IsReadOnly="True"
-                         Focusable="False" 
+                         Focusable="False"
                          Cursor="Arrow" Grid.ColumnSpan="2"
                          />
 

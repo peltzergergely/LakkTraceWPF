@@ -53,6 +53,7 @@ namespace LakkTraceWPF
 
         private void BackBtn_Click(object sender, RoutedEventArgs e)
         {
+            ((MainWindow)this.Owner).productTxbx.Focus();
             this.Close();
         }
 

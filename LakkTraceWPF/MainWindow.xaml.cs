@@ -36,8 +36,9 @@ namespace LakkTraceWPF
             Loaded += (sender, e) => MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
             InitializeComponent();
             SettingUpTheParameters();
-            DailyProduction();
             VarnishDisplay();
+            DailyProduction();
+
         }
 
         private void SettingUpTheParameters()
@@ -55,10 +56,11 @@ namespace LakkTraceWPF
             // Message Box hide
             MsgBox.Visibility = Visibility.Hidden;
 
-            //hide MessageBox by default
+            //Set leader approval to false by deafult
             IsLeaderApprovalNeeded = false;
         }
 
+        //Digit clock ticking
         private void Timer_Click(object sender, EventArgs e)
         {
             DateTime d;
@@ -153,7 +155,7 @@ namespace LakkTraceWPF
 
         private bool HsOrMbOrLa()
         {
-            if (productTxbx.Text.Length == 12 && !IsLeaderApprovalNeeded) //gen2 heatsink lenght gives the mainboard DM from the heatsink DM
+            if (productTxbx.Text.Length == 12 && !IsLeaderApprovalNeeded) //if length is 12 and its a heatsink then get the mainboardID from deltaTecServer
             {
                 try
                 {
@@ -182,7 +184,7 @@ namespace LakkTraceWPF
                     return false;
                 }
             }
-            else if (productTxbx.Text.Length == 24 && !IsLeaderApprovalNeeded)
+            else if (productTxbx.Text.Length == 24 && !IsLeaderApprovalNeeded) //if length is 24 and its a mainboardID then get the heatsingID from deltaTecServer
             {
                 try
                 {
@@ -209,7 +211,7 @@ namespace LakkTraceWPF
                     return false;
                 }
             }
-            else if (productTxbx.Text.Length == ConfigurationManager.AppSettings["lacquerApproval"].Length && IsLeaderApprovalNeeded)
+            else if (productTxbx.Text.Length == ConfigurationManager.AppSettings["lacquerApproval"].Length && IsLeaderApprovalNeeded) // leader approval input
             {
                 string pw = ConfigurationManager.AppSettings["lacquerApproval"];
                 if (Regex.IsMatch(productTxbx.Text, pw))
@@ -222,7 +224,7 @@ namespace LakkTraceWPF
                 }
                 return false;
             }
-            else
+            else // error message
             {
                 if (IsLeaderApprovalNeeded)
                     InvalidInput("LAKKOT ELLENŐRIZNI KELL, SZÓLJ A MŰSZAKVEZETŐNEK!");
@@ -251,7 +253,7 @@ namespace LakkTraceWPF
         }
 
 
-
+        //Precheck on deltaTecServer if product test result is OK or not
         private bool PreCheck()
         {
             try
@@ -361,6 +363,7 @@ namespace LakkTraceWPF
             this.mainStackPanel.Background = new SolidColorBrush(Colors.White);
         }
 
+        //Beeping
         private void ErrorSound(int numberOfBeeps)
         {
             new Thread(() =>
@@ -426,11 +429,11 @@ namespace LakkTraceWPF
             cmd.Parameters.Add(new NpgsqlParameter("prod_dm", productTxbx.Text));
             Int32 countProd = Convert.ToInt32(cmd.ExecuteScalar());
             
-            if (countProd == 0) // If the product DM is not in the DB and is TOP side up then uploads
+            if (countProd == 0) // If the product DM is not in the DB then uploads
             {
                 DbInsert(table);
             }
-            else if (countProd == 1) // Only allows BOT if it's already in the DB (see above)
+            else if (countProd == 1) // if it's already in DB then checks which side should be the next
             {
                 var carrFromDb = new NpgsqlCommand("SELECT carr_dm FROM " + table + " WHERE prod_dm = '" + productTxbx.Text + "'", conn);
                 string carr = carrFromDb.ExecuteScalar().ToString();
@@ -471,6 +474,7 @@ namespace LakkTraceWPF
             conn.Close();
         }
 
+        //adding current date to the error string
         private void DateIntoErrorMessage(string table)
         {
             string connstring = ConfigurationManager.ConnectionStrings["CCTrace.CCDBConnectionString"].ConnectionString;
@@ -514,8 +518,8 @@ namespace LakkTraceWPF
                 dbresultLbl.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FF09E409"));
                 dbresultLbl.FontWeight = FontWeights.UltraBold;
                 FormCleanerOnUploadFinished();
-                DailyProduction();
                 VarnishDisplay();
+                DailyProduction();
             }
             catch (Exception msg)
             {
@@ -569,6 +573,7 @@ namespace LakkTraceWPF
             }
         }
 
+        //show the messagebox
         private void MsgBoxShow(string msg, bool needapproval)
         {
             MsgBoxMessage.Text = msg;
@@ -578,6 +583,7 @@ namespace LakkTraceWPF
             IsMsgBoxVisible = true;
         }
 
+        //hide the messagebox
         private void MsgBoxHide()
         {
             MsgBoxMessage.Text = "";
@@ -587,6 +593,13 @@ namespace LakkTraceWPF
             productTxbx.Text = "";
             productLbl.Text = "";
             dbresultLbl.Text = "";
+        }
+
+        //hide the messagebox by click
+        private void EscBtn_Click(object sender, RoutedEventArgs e)
+        {
+            MsgBoxHide();
+            productTxbx.Focus();
         }
 
         // Shows the current varnish in a gridView
@@ -650,6 +663,7 @@ namespace LakkTraceWPF
             
         }
 
+        //open database form
         private void DbBtn_Click(object sender, RoutedEventArgs e)
         {
             DatabaseWindow window = new DatabaseWindow();
@@ -658,19 +672,12 @@ namespace LakkTraceWPF
             productTxbx.Focus();
         }
 
+        //open lacquer load
         private void LakkBtn_Click(object sender, RoutedEventArgs e)
         {
             LacquerLoad window = new LacquerLoad();
             window.Owner = this;
             window.Show();
-            productTxbx.Focus();
         }
-
-        private void EscBtn_Click(object sender, RoutedEventArgs e)
-        {
-            MsgBoxHide();
-            productTxbx.Focus();
-        }
-
     }
 }
