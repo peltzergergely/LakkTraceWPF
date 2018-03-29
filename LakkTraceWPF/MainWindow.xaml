@@ -12,7 +12,7 @@
         WindowStartupLocation="CenterScreen" 
         WindowStyle="None" 
         FontFamily="Verdana" 
-        Background="#FFD14343" 
+        Background="#FFFDFDFD" 
         Closing="onClose">
 
     <Grid>

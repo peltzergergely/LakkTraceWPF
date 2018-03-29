@@ -8,11 +8,8 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Runtime.InteropServices;
-using System.IO;
-using System.Diagnostics;
 using System.Reflection;
-using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 
 namespace LakkTraceWPF
 {
@@ -27,8 +24,9 @@ namespace LakkTraceWPF
         public bool IsMsgBoxVisible { get; private set; }
         private string heatsinkID { get; set; }
         private string mainboardID { get; set; }
+        private Int32 lacquerLoadCounter;
 
-        System.Windows.Threading.DispatcherTimer DigitClockTimer = new System.Windows.Threading.DispatcherTimer();
+        DispatcherTimer DigitClockTimer = new DispatcherTimer();
 
         public MainWindow()
         {
@@ -38,7 +36,7 @@ namespace LakkTraceWPF
             SettingUpTheParameters();
             VarnishDisplay();
             DailyProduction();
-
+            CheckLacquer();
         }
 
         private void SettingUpTheParameters()
@@ -58,6 +56,9 @@ namespace LakkTraceWPF
 
             //Set leader approval to false by deafult
             IsLeaderApprovalNeeded = false;
+
+            // Default value
+            lacquerLoadCounter = 0;
         }
 
         //Digit clock ticking
@@ -83,6 +84,9 @@ namespace LakkTraceWPF
                 s = d.Second.ToString();
 
             clockLbl.Content = h + ":" + m + ":" + s;
+
+            if (int.Parse(s) % 15 == 0)
+                DailyProduction();
         }
 
         // Cancel the close
@@ -293,7 +297,7 @@ namespace LakkTraceWPF
         // Syntax check of the product
         private void ProductValidator()
         {
-            this.mainStackPanel.Background = new SolidColorBrush(Colors.White);
+            this.mainStackPanel.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFFDFDFD"));
             dbresultLbl.Text = "";
 
             if (RegexValidation(productTxbx.Text, "productTxbx"))
@@ -360,7 +364,7 @@ namespace LakkTraceWPF
             carrierLbl.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FF000000"));
             carrierLbl.FontWeight = FontWeights.Normal;
             productTxbx.Focus();
-            this.mainStackPanel.Background = new SolidColorBrush(Colors.White);
+            this.mainStackPanel.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFFDFDFD"));
         }
 
         //Beeping
@@ -520,6 +524,7 @@ namespace LakkTraceWPF
                 FormCleanerOnUploadFinished();
                 VarnishDisplay();
                 DailyProduction();
+                CheckLacquer();
             }
             catch (Exception msg)
             {
@@ -554,7 +559,7 @@ namespace LakkTraceWPF
             Int32 todayCountVolvo = Convert.ToInt32(cmd.ExecuteScalar());
 
             cmd = new NpgsqlCommand("SELECT COUNT(*) FROM volvo WHERE workstation = '" + machineName + "'", conn);
-            Int32 lacquerLoadCounter = Convert.ToInt32(cmd.ExecuteScalar());
+            lacquerLoadCounter = Convert.ToInt32(cmd.ExecuteScalar());
             cmd = new NpgsqlCommand("SELECT COUNT(*) FROM bmw WHERE workstation = '" + machineName + "'", conn);
             lacquerLoadCounter += Convert.ToInt32(cmd.ExecuteScalar());
             conn.Close();
@@ -564,12 +569,13 @@ namespace LakkTraceWPF
 
             VOLVOsum.Content = countvolvo.ToString();
             VOLVOtoday.Content = todayCountVolvo.ToString();
+        }
 
-            //MessageBox.Show(lacquerLoadCounter.ToString());
-            //int sum = todayCountBmw + todayCountVolvo;
+        private void CheckLacquer()
+        {
             if (lacquerLoadCounter % 100 == 0)
             {
-                MsgBoxShow("Ellenőrizni kell a LAKK mennyiségét, szólj a műszakvezetőnek! Utána folytatódhat a munkafolyamat.",true);
+                MsgBoxShow("Ellenőrizni kell a LAKK mennyiségét, szólj a műszakvezetőnek! Utána folytatódhat a munkafolyamat.", true);
             }
         }
 
