@@ -19,28 +19,26 @@ namespace LakkTraceWPF
             Directory.CreateDirectory("Errors");
 
             //return the path + filename.xml
-            return dirName + "\\"+ functionName + "_" + DateTime.Today.ToString("yyyyMMdd") + "_" + DateTime.Now.ToString("HHmmss", System.Globalization.DateTimeFormatInfo.InvariantInfo)+".xml";
+            return dirName + "\\"+ functionName + "_" + DateTime.Today.ToString("yyyyMMdd") + "_" + DateTime.Now.ToString("HHmmss", System.Globalization.DateTimeFormatInfo.InvariantInfo)+".html";
         }
 
         private static string generateFileInpuit(string errorMessage, string functionName,string prod, string carr, string mID, string hID)
         {
-            string input = @"<ErrorMessage> 
-                                <Data> 
-                                    <Function>"+functionName+@"</Function> 
-                                    <Date>" + DateTime.Today.ToString("yyyy.MM.dd") + @"</Date>
-                                    <Time>"+ DateTime.Now.ToString("HH:mm:ss", System.Globalization.DateTimeFormatInfo.InvariantInfo) + @"</Time>
-                                </Data>
-                                <Input>
-                                    <productTxbx.Text>"+prod+ @"</productTxbx.Text>
-                                    <carrierTxbx.Text>" + carr+ @"</carrierTxbx.Text>
-                                    <mainboardID>" + mID + @"</mainboardID>
-                                    <heatsinkID>" + hID + @"</heatsinkID>
-                                </Input>
-                                <Message> 
-                                    " + errorMessage+@"
-                                </Message>
-                             </ErrorMessage>";
-            //productTxbx.Text,carrierTxbx.Text,mainboardID,heatsinkID
+            string input = @"<HTML> 
+                                <body>
+                                    <label>Function: <b>" + functionName + @"</b></label><br>
+                                    <label>Date: <b>" + DateTime.Today.ToString("yyyy.MM.dd") + @"</b></label><br>
+                                    <label>Time: <b>" + DateTime.Now.ToString("HH:mm:ss", System.Globalization.DateTimeFormatInfo.InvariantInfo) + @"</b></label><br>
+                                <br>
+                                    <label>productTxbx.Text: <b>" + prod + @"</b></label> <br>
+                                    <label>carrierTxbx.Text: <b>" + carr + @"</b></label> <br>
+                                    <label>mainboardID: <b>" + mID + @"</b></label> <br>
+                                    <label>heatsinkID: <b>" + hID + @"</b></label>
+                                <br>
+                                    <h3>Exception:</h3>
+                                     " + errorMessage + @"
+                                </body>
+                             </HTML>";
             return input;
         }
 

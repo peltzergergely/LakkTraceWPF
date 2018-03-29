@@ -538,37 +538,46 @@ namespace LakkTraceWPF
         // Shows the number of products uploaded this day
         private void DailyProduction()
         {
-            string connstring = ConfigurationManager.ConnectionStrings["CCTrace.CCDBConnectionString"].ConnectionString;
-           // Making connection
-            var conn = new NpgsqlConnection(connstring);
-            conn.Open();
-            //building query
-            var cmd = new NpgsqlCommand("SELECT COUNT(*) FROM bmw WHERE timestamp > 'today'", conn);
-            Int32 countbmw = Convert.ToInt32(cmd.ExecuteScalar());
-            cmd = new NpgsqlCommand("SELECT COUNT(*) FROM volvo WHERE timestamp > 'today'", conn);
-            Int32 countvolvo = Convert.ToInt32(cmd.ExecuteScalar());
+            try
+            {
+                string connstring = ConfigurationManager.ConnectionStrings["CCTrace.CCDBConnectionString"].ConnectionString;
+                // Making connection
+                var conn = new NpgsqlConnection(connstring);
+                conn.Open();
+                //building query
+                var cmd = new NpgsqlCommand("SELECT COUNT(*) FROM bmw WHERE timestamp > 'today'", conn);
+                Int32 countbmw = Convert.ToInt32(cmd.ExecuteScalar());
+                cmd = new NpgsqlCommand("SELECT COUNT(*) FROM volvo WHERE timestamp > 'today'", conn);
+                Int32 countvolvo = Convert.ToInt32(cmd.ExecuteScalar());
 
-            string machineName = Environment.MachineName.ToString();
-            if (machineName == "DESKTOP-7L1HPPN")
-                machineName = "old_lakk_pc";
+                string machineName = Environment.MachineName.ToString();
+                if (machineName == "DESKTOP-7L1HPPN")
+                    machineName = "old_lakk_pc";
 
-            //machineName = "DESKTOP-BVFFOIU";
-            cmd = new NpgsqlCommand("SELECT COUNT(*) FROM bmw WHERE timestamp > 'today' AND workstation = '" + machineName + "'", conn);
-            Int32 todayCountBmw = Convert.ToInt32(cmd.ExecuteScalar());
-            cmd = new NpgsqlCommand("SELECT COUNT(*) FROM volvo WHERE timestamp > 'today' AND workstation = '" + machineName + "'", conn);
-            Int32 todayCountVolvo = Convert.ToInt32(cmd.ExecuteScalar());
+                //machineName = "DESKTOP-BVFFOIU";
+                cmd = new NpgsqlCommand("SELECT COUNT(*) FROM bmw WHERE timestamp > 'today' AND workstation = '" + machineName + "'", conn);
+                Int32 todayCountBmw = Convert.ToInt32(cmd.ExecuteScalar());
+                cmd = new NpgsqlCommand("SELECT COUNT(*) FROM volvo WHERE timestamp > 'today' AND workstation = '" + machineName + "'", conn);
+                Int32 todayCountVolvo = Convert.ToInt32(cmd.ExecuteScalar());
 
-            cmd = new NpgsqlCommand("SELECT COUNT(*) FROM volvo WHERE workstation = '" + machineName + "'", conn);
-            lacquerLoadCounter = Convert.ToInt32(cmd.ExecuteScalar());
-            cmd = new NpgsqlCommand("SELECT COUNT(*) FROM bmw WHERE workstation = '" + machineName + "'", conn);
-            lacquerLoadCounter += Convert.ToInt32(cmd.ExecuteScalar());
-            conn.Close();
+                cmd = new NpgsqlCommand("SELECT COUNT(*) FROM volvo WHERE workstation = '" + machineName + "'", conn);
+                lacquerLoadCounter = Convert.ToInt32(cmd.ExecuteScalar());
+                cmd = new NpgsqlCommand("SELECT COUNT(*) FROM bmw WHERE workstation = '" + machineName + "'", conn);
+                lacquerLoadCounter += Convert.ToInt32(cmd.ExecuteScalar());
+                conn.Close();
 
-            BMWsum.Content = countbmw.ToString();
-            BMWtoday.Content = todayCountBmw.ToString();
+                BMWsum.Content = countbmw.ToString();
+                BMWtoday.Content = todayCountBmw.ToString();
 
-            VOLVOsum.Content = countvolvo.ToString();
-            VOLVOtoday.Content = todayCountVolvo.ToString();
+                VOLVOsum.Content = countvolvo.ToString();
+                VOLVOtoday.Content = todayCountVolvo.ToString();
+            }catch(Exception msg)
+            {
+                MsgBoxShow("Hiba történt! Részletek elmentve az Errors mappába!", false);
+                ErrorLog.Create(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString(), productTxbx.Text, carrierTxbx.Text, mainboardID, heatsinkID);
+                FormCleanerOnUploadFinished();
+                ErrorSound(3);
+            }
         }
 
         private void CheckLacquer()
