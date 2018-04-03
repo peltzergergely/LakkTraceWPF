@@ -181,7 +181,7 @@ namespace LakkTraceWPF
                 }
                 catch (Exception msg)
                 {
-                    MsgBoxShow("Hiba történt! Részletek elmentve az Errors mappába!", false);
+                    MsgBoxShow("Hiba történt! Ezt a terméket NE LAKKOZD! Részletek elmentve az Errors mappába!", false);
                     ErrorLog.Create(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString(), productTxbx.Text, carrierTxbx.Text, mainboardID, heatsinkID);
                     FormCleanerOnUploadFinished();
                     ErrorSound(3);
@@ -208,7 +208,7 @@ namespace LakkTraceWPF
                 }
                 catch (Exception msg)
                 {
-                    MsgBoxShow("Hiba történt! Részletek elmentve az Errors mappába!", false);
+                    MsgBoxShow("Hiba történt! Ezt a terméket NE LAKKOZD! Részletek elmentve az Errors mappába!", false);
                     ErrorLog.Create(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString(), productTxbx.Text, carrierTxbx.Text, mainboardID, heatsinkID);
                     FormCleanerOnUploadFinished();
                     ErrorSound(3);
@@ -279,7 +279,7 @@ namespace LakkTraceWPF
             }
             catch (Exception msg)
             {
-                MsgBoxShow("Hiba történt! Részletek elmentve az Errors mappába!", false);
+                MsgBoxShow("Hiba történt! Ezt a terméket NE LAKKOZD! Részletek elmentve az Errors mappába!", false);
                 ErrorLog.Create(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString(), productTxbx.Text, carrierTxbx.Text, mainboardID, heatsinkID);
                 FormCleanerOnUploadFinished();
                 ErrorSound(3);

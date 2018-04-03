@@ -16,7 +16,7 @@ namespace LakkTraceWPF
         private static string generateFileName(string functionName)
         {
             //create Directory if not exits
-            Directory.CreateDirectory("Errors");
+            Directory.CreateDirectory(dirName);
 
             //return the path + filename.xml
             return dirName + "\\"+ functionName + "_" + DateTime.Today.ToString("yyyyMMdd") + "_" + DateTime.Now.ToString("HHmmss", System.Globalization.DateTimeFormatInfo.InvariantInfo)+".html";
@@ -35,7 +35,7 @@ namespace LakkTraceWPF
                                     <label>mainboardID: <b>" + mID + @"</b></label> <br>
                                     <label>heatsinkID: <b>" + hID + @"</b></label>
                                 <br>
-                                    <h3>Exception:</h3>
+                                    <h3>Error message:</h3>
                                      " + errorMessage + @"
                                 </body>
                              </HTML>";
