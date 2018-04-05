@@ -46,13 +46,14 @@
 
         <Border x:Name="MsgBox"
                     BorderThickness="0 2 0 2" 
-                Padding="10"
+                    Padding="10"
                     BorderBrush="DarkSlateGray"
                     VerticalAlignment="Top"
                     HorizontalAlignment="Center"
                     Margin="0 185 10 0"
                     Visibility="Visible"
                     Width="1200"
+                    Background="#FFFDFDFD"
                     >
 
             <Grid>
@@ -202,7 +203,8 @@
                         HorizontalContentAlignment="Center"/>
 
             <Border BorderThickness="2" 
-                        BorderBrush="DarkSlateGray">
+                    BorderBrush="DarkSlateGray"
+                    Background="#FFFDFDFD">
                 <Grid Height="160">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -295,7 +297,8 @@
                                 HorizontalContentAlignment="Center"
                                 />
             <Border BorderThickness="2" 
-                    BorderBrush="DarkSlateGray">
+                    BorderBrush="DarkSlateGray"
+                    Background="#FFFDFDFD">
                 <Grid Height="160">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>

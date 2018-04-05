@@ -27,6 +27,7 @@ namespace LakkTraceWPF
         private Int32 lacquerLoadCounter;
 
         DispatcherTimer DigitClockTimer = new DispatcherTimer();
+        DispatcherTimer ContinuousErrorSound = new DispatcherTimer();
 
         public MainWindow()
         {
@@ -50,6 +51,10 @@ namespace LakkTraceWPF
             DigitClockTimer.Tick += new EventHandler(Timer_Click);
             DigitClockTimer.Interval = new TimeSpan(0, 0, 1);
             DigitClockTimer.Start();
+
+            //Continous Error timer
+            ContinuousErrorSound.Tick += new EventHandler(Timer_Error);
+            ContinuousErrorSound.Interval = new TimeSpan(0, 0, 0, 0, 550);
 
             // Message Box hide
             MsgBox.Visibility = Visibility.Hidden;
@@ -87,6 +92,38 @@ namespace LakkTraceWPF
 
             if (int.Parse(s) % 15 == 0)
                 DailyProduction();
+        }
+        
+        //Error timer
+        private void Timer_Error(object sender, EventArgs e)
+        {
+            if (IsLeaderApprovalNeeded)
+            {
+                ErrorSound(1);
+                ChangeBackground();
+            }
+            else
+            {
+                ContinuousErrorSound.Stop();
+                mainStackPanel.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFFDFDFD"));
+            }
+        }
+
+        private void ChangeBackground()
+        {
+
+            if (mainStackPanel.Background.ToString() == "#FFFDFDFD")
+            {
+                productLbl.Foreground = Brushes.White;
+                dbresultLbl.Foreground = Brushes.White;
+                mainStackPanel.Background = Brushes.Red;
+            }
+            else
+            {
+                productLbl.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFFF0505"));
+                dbresultLbl.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFFF0505"));
+                mainStackPanel.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFFDFDFD"));
+            }
         }
 
         // Cancel the close
@@ -172,19 +209,31 @@ namespace LakkTraceWPF
                     SqlDataAdapter adpm = new SqlDataAdapter(SQLcmd);
                     DataTable dtm = new DataTable();
                     adpm.Fill(dtm);
-                    string mbid = dtm.Rows[0]["MainBoard_ID"].ToString();
-                    heatsinkID = productTxbx.Text;
-                    mainboardID = mbid;
-                    productTxbx.Text = mainboardID;
-                    ProductValidator();
-                    return true;
+
+                    if (dtm.Rows.Count.ToString() == "1")
+                    {
+                        string mbid = dtm.Rows[0]["MainBoard_ID"].ToString();
+                        heatsinkID = productTxbx.Text;
+                        mainboardID = mbid;
+                        productTxbx.Text = mainboardID;
+                        ProductValidator();
+                        return true;
+                    }
+                    else throw new IndexOutOfRangeException("The HeatsinkID was not found in deltaTecServer's database!");
+
+
+                }
+                catch (IndexOutOfRangeException msg)
+                {
+                    ErrorLog.Create(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString(), productTxbx.Text, carrierTxbx.Text, mainboardID, heatsinkID);
+                    dbresultLbl.Text = "A TERMÉK NINCS TESZTELVE! NE LAKKOZD, SZÓLJ A MŰSZAKVEZETŐNEK!";
+                    FormErrorDisplay();
+                    return false;
                 }
                 catch (Exception msg)
                 {
                     MsgBoxShow("Hiba történt! Ezt a terméket NE LAKKOZD! Részletek elmentve az Errors mappába!", false);
                     ErrorLog.Create(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString(), productTxbx.Text, carrierTxbx.Text, mainboardID, heatsinkID);
-                    FormCleanerOnUploadFinished();
-                    ErrorSound(3);
                     return false;
                 }
             }
@@ -201,17 +250,27 @@ namespace LakkTraceWPF
                     SqlDataAdapter adpm = new SqlDataAdapter(objcmdm);
                     DataTable dtm = new DataTable();
                     adpm.Fill(dtm);
-                    string mbid = dtm.Rows[0]["HeatSink_ID"].ToString();
-                    heatsinkID = mbid;
-                    mainboardID = productTxbx.Text;
-                    return true;
+
+                    if (dtm.Rows.Count.ToString() == "1")
+                    {
+                        string mbid = dtm.Rows[0]["HeatSink_ID"].ToString();
+                        heatsinkID = mbid;
+                        mainboardID = productTxbx.Text;
+                        return true;
+                    }
+                    else throw new IndexOutOfRangeException("The mainboardID was not found in deltaTecServer's database!");
+            }
+                catch (IndexOutOfRangeException msg)
+                {
+                    ErrorLog.Create(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString(), productTxbx.Text, carrierTxbx.Text, mainboardID, heatsinkID);
+                    dbresultLbl.Text = "A TERMÉK NINCS TESZTELVE! NE LAKKOZD, SZÓLJ A MŰSZAKVEZETŐNEK!";
+                    FormErrorDisplay();
+                    return false;
                 }
                 catch (Exception msg)
                 {
                     MsgBoxShow("Hiba történt! Ezt a terméket NE LAKKOZD! Részletek elmentve az Errors mappába!", false);
                     ErrorLog.Create(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString(), productTxbx.Text, carrierTxbx.Text, mainboardID, heatsinkID);
-                    FormCleanerOnUploadFinished();
-                    ErrorSound(3);
                     return false;
                 }
             }
@@ -234,9 +293,10 @@ namespace LakkTraceWPF
                     InvalidInput("LAKKOT ELLENŐRIZNI KELL, SZÓLJ A MŰSZAKVEZETŐNEK!");
                 else
                 {
-
-                }
                     InvalidInput("NEM MEGFELELŐ VONALKÓDOT OLVASTÁL BE!");
+                    ErrorSound(3);
+                }
+
                 return false;
             }
         }
@@ -245,7 +305,6 @@ namespace LakkTraceWPF
         {
             if (productTxbx.Text.Length != 0)
             {
-                ErrorSound(3); // 3 -> number of beeps
                 productLbl.Text = productTxbx.Text;
                 productLbl.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFFF0505"));
                 productLbl.FontWeight = FontWeights.Normal;
@@ -271,6 +330,7 @@ namespace LakkTraceWPF
                 SqlDataAdapter adpm = new SqlDataAdapter(objcmdm);
                 DataTable dtm = new DataTable();
                 adpm.Fill(dtm);
+                
                 if (dtm.Rows[0]["Result"].ToString() == "OK")
                 {
                     return true;
@@ -596,6 +656,9 @@ namespace LakkTraceWPF
             MsgBox.Visibility = Visibility.Visible;
             IsLeaderApprovalNeeded = needapproval;
             IsMsgBoxVisible = true;
+
+            if (needapproval)
+                ContinuousErrorSound.Start();
         }
 
         //hide the messagebox

@@ -1,25 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+
 
 namespace LakkTraceWPF
 {
     class ErrorLog
     {
         private static string dirName = "Errors"; 
+
         private static string generateFileName(string functionName)
         {
             //create Directory if not exits
             Directory.CreateDirectory(dirName);
 
             //return the path + filename.xml
-            return dirName + "\\"+ functionName + "_" + DateTime.Today.ToString("yyyyMMdd") + "_" + DateTime.Now.ToString("HHmmss", System.Globalization.DateTimeFormatInfo.InvariantInfo)+".html";
+            return dirName + "\\"+ functionName + "_" + DateTime.Today.ToString("yyyyMMdd") + "_" + DateTime.Now.ToString("HHmmss", DateTimeFormatInfo.InvariantInfo)+".html";
         }
 
         private static string generateFileInpuit(string errorMessage, string functionName,string prod, string carr, string mID, string hID)
@@ -28,7 +24,7 @@ namespace LakkTraceWPF
                                 <body>
                                     <label>Function: <b>" + functionName + @"</b></label><br>
                                     <label>Date: <b>" + DateTime.Today.ToString("yyyy.MM.dd") + @"</b></label><br>
-                                    <label>Time: <b>" + DateTime.Now.ToString("HH:mm:ss", System.Globalization.DateTimeFormatInfo.InvariantInfo) + @"</b></label><br>
+                                    <label>Time: <b>" + DateTime.Now.ToString("HH:mm:ss", DateTimeFormatInfo.InvariantInfo) + @"</b></label><br>
                                 <br>
                                     <label>productTxbx.Text: <b>" + prod + @"</b></label> <br>
                                     <label>carrierTxbx.Text: <b>" + carr + @"</b></label> <br>
