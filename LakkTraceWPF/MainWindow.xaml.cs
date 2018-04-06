@@ -10,6 +10,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Reflection;
 using System.Windows.Threading;
+using System.Collections.Generic;
 
 namespace LakkTraceWPF
 {
@@ -209,6 +210,7 @@ namespace LakkTraceWPF
                     SqlDataAdapter adpm = new SqlDataAdapter(SQLcmd);
                     DataTable dtm = new DataTable();
                     adpm.Fill(dtm);
+                    cnn.Close();
 
                     if (dtm.Rows.Count.ToString() == "1")
                     {
@@ -219,11 +221,9 @@ namespace LakkTraceWPF
                         ProductValidator();
                         return true;
                     }
-                    else throw new IndexOutOfRangeException("The HeatsinkID was not found in deltaTecServer's database!");
-
-
+                    else throw new KeyNotFoundException("The HeatsinkID was not found in deltaTecServer's database!");
                 }
-                catch (IndexOutOfRangeException msg)
+                catch (KeyNotFoundException msg)
                 {
                     ErrorLog.Create(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString(), productTxbx.Text, carrierTxbx.Text, mainboardID, heatsinkID);
                     dbresultLbl.Text = "A TERMÉK NINCS TESZTELVE! NE LAKKOZD, SZÓLJ A MŰSZAKVEZETŐNEK!";
@@ -250,6 +250,7 @@ namespace LakkTraceWPF
                     SqlDataAdapter adpm = new SqlDataAdapter(objcmdm);
                     DataTable dtm = new DataTable();
                     adpm.Fill(dtm);
+                    cnn.Close();
 
                     if (dtm.Rows.Count.ToString() == "1")
                     {
@@ -258,9 +259,9 @@ namespace LakkTraceWPF
                         mainboardID = productTxbx.Text;
                         return true;
                     }
-                    else throw new IndexOutOfRangeException("The mainboardID was not found in deltaTecServer's database!");
-            }
-                catch (IndexOutOfRangeException msg)
+                    else throw new KeyNotFoundException("The MainboardID was not found in deltaTecServer's database!");
+                }
+                catch (KeyNotFoundException msg)
                 {
                     ErrorLog.Create(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString(), productTxbx.Text, carrierTxbx.Text, mainboardID, heatsinkID);
                     dbresultLbl.Text = "A TERMÉK NINCS TESZTELVE! NE LAKKOZD, SZÓLJ A MŰSZAKVEZETŐNEK!";
@@ -330,12 +331,10 @@ namespace LakkTraceWPF
                 SqlDataAdapter adpm = new SqlDataAdapter(objcmdm);
                 DataTable dtm = new DataTable();
                 adpm.Fill(dtm);
-                
+                cnn.Close();
                 if (dtm.Rows[0]["Result"].ToString() == "OK")
-                {
                     return true;
-                }
-                else return false;
+                else return false;   
             }
             catch (Exception msg)
             {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using System.Globalization;
 using System.IO;
 
@@ -7,7 +8,7 @@ namespace LakkTraceWPF
 {
     class ErrorLog
     {
-        private static string dirName = "Errors"; 
+        private static string dirName = ConfigurationManager.AppSettings["outputFolder"];
 
         private static string generateFileName(string functionName)
         {

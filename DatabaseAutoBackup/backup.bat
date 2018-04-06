@@ -11,6 +11,6 @@ set datestr=%datestr:.=%
 SET PGPASSWORD=admin
 
 echo on
-start /min bin\pg_dump -h localhost -p 5432 -U postgres -F c -b -v -f "C:\Users\rsoos\Desktop\backup\CCDB_%datestr%.backup" CCDB
+start /min pg_dump -h localhost -p 5432 -U postgres -F c -b -v -f "C:\ProgramData\CCDB_backup\CCDB_%datestr%.backup" CCDB
 
 	
