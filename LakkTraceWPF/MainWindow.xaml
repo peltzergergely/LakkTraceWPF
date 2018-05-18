@@ -194,7 +194,7 @@
                     VerticalAlignment="Bottom"
                     Width="420"
                     Height="210"
-                    Margin="500 0 0 50">
+                    Margin="300 0 0 50">
 
             <Label  Content="Lakk"
                         FontSize="30"
@@ -284,11 +284,11 @@
             </Border>
         </StackPanel>
 
-        <StackPanel HorizontalAlignment="Right"
+        <StackPanel HorizontalAlignment="Center"
                     VerticalAlignment="Bottom"
                     Width="420"
                     Height="210"
-                    Margin="0 0 500 50"
+                    Margin="0 0 0 50"
                     >
             <Label  Content="Mai statisztika"
                                 FontSize="30"
@@ -399,6 +399,121 @@
             </Border>
         </StackPanel>
 
+        <StackPanel HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    Width="420"
+                    Height="210"
+                    Margin="0 0 300 50"
+                    >
+            <Label  Content="Műszak statisztika"
+                                FontSize="30"
+                                Foreground="DarkSlateGray"
+                                VerticalContentAlignment="Center"
+                                HorizontalContentAlignment="Center"
+                                />
+            <Border BorderThickness="2" 
+                    BorderBrush="DarkSlateGray"
+                    Background="#FFFDFDFD">
+                <Grid Height="160">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Label  Content="BMW"
+                            FontSize="25"
+                            FontStyle="Italic"
+                            Foreground="DarkSlateGray"
+                            Grid.Column="0"
+                            Grid.Row="0"
+                            VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Right"
+                            />
+
+                    <Label  Content="VOLVO"
+                            FontSize="25"
+                            FontStyle="Italic"
+                            Foreground="DarkSlateGray"
+                            Grid.Column="0"
+                            Grid.Row="1"
+                            VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Right"
+                            />
+                    <Label  Content="Összesen"
+                            FontSize="25"
+                            FontStyle="Italic"
+                            Foreground="DarkSlateGray"
+                            Grid.Column="1"
+                            Grid.Row="2"
+                            VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Center"
+                            />
+
+                    <Label  Content="Itt"
+                            FontSize="25"
+                            FontStyle="Italic"
+                            Foreground="DarkSlateGray"
+                            Grid.Column="2"
+                            Grid.Row="2"
+                            VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Center"
+                            />
+                    <Label  x:Name="BMWsumShift"
+                            Content="0"
+                            FontSize="35"
+                            FontWeight="Bold"
+                            Foreground="DarkSlateGray"
+                            Grid.Column="1"
+                            Grid.Row="0"
+                            VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Center"
+                            />
+
+                    <Label  x:Name="VOLVOsumShift"
+                            Content="0"
+                            FontSize="35"
+                            FontWeight="Bold"
+                            Foreground="DarkSlateGray"
+                            Grid.Column="1"
+                            Grid.Row="1"
+                            VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Center"
+                            />
+
+                    <Label  x:Name="VOLVOtodayShift"
+                            Content="0"
+                            FontSize="35"
+                            FontWeight="Bold"
+                            Foreground="DarkSlateGray"
+                            Grid.Column="2"
+                            Grid.Row="1"
+                            VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Center"
+                            />
+                    <Label  x:Name="BMWtodayShift"
+                            Content="0"
+                            FontSize="35"
+                            FontWeight="Bold"
+                            Foreground="DarkSlateGray"
+                            Grid.Column="2"
+                            Grid.Row="0"
+                            VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Center"
+                            />
+
+
+
+                </Grid>
+            </Border>
+        </StackPanel>
+
         <StackPanel VerticalAlignment="Bottom" 
                     HorizontalAlignment="Left">
             <Button x:Name="DbBtn"
@@ -456,19 +571,20 @@
         </StackPanel>
 
         <StackPanel VerticalAlignment="Bottom"
-                    HorizontalAlignment="Right">
+                    HorizontalAlignment="Right"
+                    >
             <Button x:Name="LakkBtn"
                     VerticalContentAlignment="Center"
                     HorizontalContentAlignment="Center"
                     HorizontalAlignment="Right"
-                    Margin="40"
+                    Margin="0,0,10,10"
                     VerticalAlignment="Bottom"
-                    Height="auto"
-                    Width="auto" 
+                    Height="100"
+                    Width="280" 
                     Background="LightGoldenrodYellow"
                     Foreground="DarkSlateGray"
                     BorderThickness="2"
-                    BorderBrush="Black"
+                    BorderBrush="DarkSlateGray"
                     IsTabStop="False"
                     Click="LakkBtn_Click">
                 <StackPanel Orientation="Horizontal">
@@ -476,10 +592,10 @@
                                Margin="5"
                                HorizontalAlignment="Left" 
                                FontFamily="Segoe MDL2 Assets" 
-                               FontSize="80" 
+                               FontSize="60" 
                                Padding="2" >&#xE835;</TextBlock>
                     <TextBlock VerticalAlignment="Center"
-                               FontSize="35"
+                               FontSize="30"
                                Padding="10"
                                TextWrapping="Wrap"
                                Width="186" 
@@ -487,9 +603,40 @@
                                Margin="5,0,0,0">Lakk feltöltése</TextBlock>
                 </StackPanel>
             </Button>
+
+            <Button x:Name="ShiftResetBtn"
+                    VerticalContentAlignment="Center"
+                    HorizontalContentAlignment="Center"
+                    HorizontalAlignment="Right"
+                    Margin="0,0,10,0"
+                    VerticalAlignment="Bottom"
+                    Height="60"
+                    Width="280" 
+                    Background="LightCyan"
+                    Foreground="DarkSlateGray"
+                    BorderThickness="2"
+                    BorderBrush="DarkSlateGray"
+                    IsTabStop="False"
+                    Click="ShiftResetBtn_Click" >
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock VerticalAlignment="Center" 
+                               Margin="5"
+                               HorizontalAlignment="Left" 
+                               FontFamily="Segoe MDL2 Assets" 
+                               FontSize="30" 
+                               Padding="2" >&#xE8EE;</TextBlock>
+                    <TextBlock VerticalAlignment="Center"
+                               FontSize="30"
+                               Padding="10"
+                               TextWrapping="Wrap"
+                               Width="186" 
+                               TextAlignment="Center" 
+                               Margin="5,0,0,0">Új műszak</TextBlock>
+                </StackPanel>
+            </Button>
             <Button x:Name="SaveBtn"
                     HorizontalAlignment="Right"
-                    Margin="40" 
+                    Margin="0,10,40,40" 
                     VerticalAlignment="Bottom"
                     Height="auto" Width="auto" 
                     Background="#FDFDFD" 

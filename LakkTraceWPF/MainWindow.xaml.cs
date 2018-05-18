@@ -604,6 +604,7 @@ namespace LakkTraceWPF
                 var conn = new NpgsqlConnection(connstring);
                 conn.Open();
                 //building query
+
                 var cmd = new NpgsqlCommand("SELECT COUNT(*) FROM bmw WHERE timestamp > 'today'", conn);
                 Int32 countbmw = Convert.ToInt32(cmd.ExecuteScalar());
                 cmd = new NpgsqlCommand("SELECT COUNT(*) FROM volvo WHERE timestamp > 'today'", conn);
@@ -623,13 +624,54 @@ namespace LakkTraceWPF
                 lacquerLoadCounter = Convert.ToInt32(cmd.ExecuteScalar());
                 cmd = new NpgsqlCommand("SELECT COUNT(*) FROM bmw WHERE workstation = '" + machineName + "'", conn);
                 lacquerLoadCounter += Convert.ToInt32(cmd.ExecuteScalar());
+
+                //Shift statistic
+
+                //get the number of workstations
+                int numberOfWorkstations = int.Parse(new NpgsqlCommand("SELECT COUNT(*) FROM shift_dates", conn).ExecuteScalar().ToString());
+
+                //get the names of the workstations
+                List<string> workstations = new List<string>();
+                for (int i = 0; i < numberOfWorkstations; i++)
+                {
+                    workstations.Add(new NpgsqlCommand("SELECT workstation FROM shift_dates where id = " + (i + 1), conn).ExecuteScalar().ToString());
+                }
+                //sum the shift product count
+                int numberOfBmwPerShift = 0;
+                int numberOfVolvoPerShift = 0;
+
+                string thisWorkstationResetDate = "";
+
+                foreach (var mchname in workstations)
+                {
+                    string resetDatePerWorkstation = new NpgsqlCommand("SELECT date FROM shift_dates WHERE workstation = '" + mchname + "'", conn).ExecuteScalar().ToString();
+
+                    if (mchname == machineName)
+                        thisWorkstationResetDate = resetDatePerWorkstation;
+
+                    numberOfBmwPerShift += int.Parse(new NpgsqlCommand("SELECT COUNT(*) FROM bmw WHERE timestamp > '" + resetDatePerWorkstation + "' AND workstation = '"+ mchname + "'", conn).ExecuteScalar().ToString());
+                    numberOfVolvoPerShift += int.Parse(new NpgsqlCommand("SELECT COUNT(*) FROM volvo WHERE timestamp > '" + resetDatePerWorkstation + "' AND workstation = '"+ mchname + "'", conn).ExecuteScalar().ToString());
+                }
+
+                cmd = new NpgsqlCommand("SELECT COUNT(*) FROM bmw WHERE timestamp > '"+ thisWorkstationResetDate + "' AND workstation = '" + machineName + "'", conn);
+                Int32 bmwHereCountShift = Convert.ToInt32(cmd.ExecuteScalar());
+                cmd = new NpgsqlCommand("SELECT COUNT(*) FROM volvo WHERE timestamp > '"+ thisWorkstationResetDate + "' AND workstation = '" + machineName + "'", conn);
+                Int32 volvoHereCountShift = Convert.ToInt32(cmd.ExecuteScalar());
+
+
                 conn.Close();
 
+                //today stat
                 BMWsum.Content = countbmw.ToString();
                 BMWtoday.Content = todayCountBmw.ToString();
-
                 VOLVOsum.Content = countvolvo.ToString();
                 VOLVOtoday.Content = todayCountVolvo.ToString();
+
+                //shift stat
+                BMWsumShift.Content = numberOfBmwPerShift.ToString();
+                VOLVOsumShift.Content = numberOfVolvoPerShift.ToString();
+                VOLVOtodayShift.Content = volvoHereCountShift.ToString();
+                BMWtodayShift.Content = bmwHereCountShift.ToString();
             }catch(Exception msg)
             {
                 MsgBoxShow("Hiba történt! Részletek elmentve az Errors mappába!", false);
@@ -755,6 +797,32 @@ namespace LakkTraceWPF
             LacquerLoad window = new LacquerLoad();
             window.Owner = this;
             window.Show();
+        }
+
+        private void ShiftResetBtn_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string connstring = ConfigurationManager.ConnectionStrings["CCTrace.CCDBConnectionString"].ConnectionString;
+                var conn = new NpgsqlConnection(connstring);
+                conn.Open();
+
+                string machineName = Environment.MachineName.ToString();
+                if (machineName == "DESKTOP-7L1HPPN")
+                    machineName = "old_lakk_pc";
+
+                var cmd = new NpgsqlCommand("UPDATE shift_dates SET date = to_char(current_timestamp,'YYYY-MM-DD HH24:MI:SS') where workstation = '" + machineName +"'", conn);
+                cmd.ExecuteNonQuery();
+                conn.Close();
+
+                DailyProduction();
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+            
         }
     }
 }
