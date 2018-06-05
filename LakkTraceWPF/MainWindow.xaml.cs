@@ -11,6 +11,7 @@ using System.Windows.Media;
 using System.Reflection;
 using System.Windows.Threading;
 using System.Collections.Generic;
+using System.Windows.Controls;
 
 namespace LakkTraceWPF
 {
@@ -25,6 +26,8 @@ namespace LakkTraceWPF
         public bool IsMsgBoxVisible { get; private set; }
         private string heatsinkID { get; set; }
         private string mainboardID { get; set; }
+        public int IsExpandOpen { get; private set; } = 0;
+
         private Int32 lacquerLoadCounter;
 
         DispatcherTimer DigitClockTimer = new DispatcherTimer();
@@ -38,7 +41,305 @@ namespace LakkTraceWPF
             SettingUpTheParameters();
             VarnishDisplay();
             DailyProduction();
+            UpdateLastShiftStatistic();
             CheckLacquer();
+            RefreshSemiFinishedProducts();
+        }
+
+        private void RefreshSemiFinishedProducts()
+        {
+            try
+            {
+                string connstring = ConfigurationManager.ConnectionStrings["CCTrace.CCDBConnectionString"].ConnectionString;
+
+                using (var conn = new NpgsqlConnection(connstring))
+                {
+                    conn.Open();
+
+                    DataSet DS = new DataSet();
+                    DataTable DT = new DataTable();
+
+                    string query = @"(SELECT bmw.prod_dm,bmw.timestamp FROM
+                                    (
+	                                    SELECT COUNT(*) AS db,prod_dm FROM bmw GROUP BY prod_dm
+                                    ) AS subq
+                                    JOIN bmw ON bmw.prod_dm = subq.prod_dm
+                                    WHERE db = 1 AND bmw.prod_dm NOT IN (SELECT prod_dm FROM semi_finished_products))
+
+                                    UNION
+
+                                    (SELECT volvo.prod_dm,volvo.timestamp FROM
+                                    (
+	                                    SELECT count(*) AS db,prod_dm FROM volvo GROUP BY prod_dm
+                                    ) AS subq
+                                    JOIN volvo ON volvo.prod_dm = subq.prod_dm
+                                    WHERE db = 1 AND volvo.prod_dm NOT IN (SELECT prod_dm FROM semi_finished_products))
+
+                                    ORDER BY timestamp LIMIT 70";
+
+                    var DA = new NpgsqlDataAdapter(query, conn);
+                    DS.Reset();
+                    DA.Fill(DS);
+                    DT = DS.Tables[0];
+
+                    semiFinishedProducts.Children.Clear();
+
+                    for (int i = 0; i < DT.Rows.Count; i++)
+                    {
+                        var exp = new Expander
+                        {
+                            Header = DT.Rows[i][0].ToString(),
+                            BorderThickness = new Thickness(0),
+                            Width = 220
+                        };
+                        exp.Expanded += GetDatasIntoExpand;
+
+                        DateTime timestamp = Convert.ToDateTime(DT.Rows[i][1]);
+
+                        if (DateTime.Now.Subtract(timestamp).TotalMinutes > 40)
+                        {
+                            exp.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#EA0000"));
+                        }
+                        else if (DateTime.Now.Subtract(timestamp).TotalMinutes > 25)
+                        {
+                            exp.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#D1B02E"));
+                        }
+                        else
+                        {
+                            exp.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#489324"));
+                        }
+
+                        exp.Collapsed += decreaseIsExpandOpen;
+
+                        semiFinishedProducts.Children.Add(exp);
+                    }
+
+                    string Countquery = @"select count(*) from
+                                        ((SELECT bmw.prod_dm,bmw.timestamp FROM
+                                        (
+	                                        SELECT COUNT(*) AS db,prod_dm FROM bmw GROUP BY prod_dm
+                                        ) AS subq
+                                        JOIN bmw ON bmw.prod_dm = subq.prod_dm
+                                        WHERE db = 1 AND bmw.prod_dm NOT IN (SELECT prod_dm FROM semi_finished_products))
+
+                                        UNION
+
+                                        (SELECT volvo.prod_dm,volvo.timestamp FROM
+                                        (
+	                                        SELECT count(*) AS db,prod_dm FROM volvo GROUP BY prod_dm
+                                        ) AS subq
+                                        JOIN volvo ON volvo.prod_dm = subq.prod_dm
+                                        WHERE db = 1 AND volvo.prod_dm NOT IN (SELECT prod_dm FROM semi_finished_products))) as Q";
+                   semiFinishedCount.Text = new NpgsqlCommand(Countquery, conn).ExecuteScalar().ToString();
+
+                }
+            }
+            catch(Exception msg)
+            {
+                MessageBox.Show(msg.ToString());
+            }
+
+        }
+
+        private void decreaseIsExpandOpen(object sender, RoutedEventArgs e)
+        {
+            IsExpandOpen--;
+        }
+
+        private void GetDatasIntoExpand(object sender, RoutedEventArgs e)
+        {
+            IsExpandOpen++;
+            string prodDm = (sender as Expander).Header.ToString();
+            string connstring = ConfigurationManager.ConnectionStrings["CCTrace.CCDBConnectionString"].ConnectionString;
+
+            try
+            {
+                using (var conn = new NpgsqlConnection(connstring))
+                {
+                    conn.Open();
+                    DataSet DS = new DataSet();
+                    DataTable DT = new DataTable();
+
+                    string query = @"(SELECT bmw.id,bmw.prod_dm,subq.db,bmw.timestamp,bmw.workstation,bmw.carr_dm FROM
+                                (
+	                                SELECT COUNT(*) AS db,prod_dm FROM bmw GROUP BY prod_dm
+                                ) AS subq
+                                JOIN bmw ON bmw.prod_dm = subq.prod_dm
+                                WHERE db = 1 AND bmw.prod_dm = '" + prodDm + @"'
+                                )
+
+                                UNION
+
+                                (SELECT volvo.id,volvo.prod_dm,subq.db,volvo.timestamp,volvo.workstation,volvo.carr_dm FROM
+                                (
+	                                SELECT COUNT(*) AS db,prod_dm FROM volvo GROUP BY prod_dm
+                                ) AS subq
+                                JOIN volvo ON volvo.prod_dm = subq.prod_dm
+                                WHERE db = 1 AND volvo.prod_dm = '" + prodDm + @"')
+                                ";
+
+                    var DA = new NpgsqlDataAdapter(query, conn);
+                    DS.Reset();
+                    DA.Fill(DS);
+                    DT = DS.Tables[0];
+
+                    string text = "ID: " + DT.Rows[0][0] + Environment.NewLine + "Idő: " + DT.Rows[0][3] + Environment.NewLine + "Munkaállomás: " + DT.Rows[0][4] + Environment.NewLine + "Hiányos oldal: ";
+
+                    if (DT.Rows[0][5].ToString().Contains("BOT"))
+                    {
+                        text += "TOP";
+                    }
+                    else if (DT.Rows[0][5].ToString().Contains("TOP"))
+                    {
+                        text += "BOT";
+                    }
+                    else
+                    {
+                        text += "n/a";
+                    }
+
+                    if (DT.Rows[0][5].ToString().Contains("BMW"))
+                    {
+                        text += Environment.NewLine + "Termék: BMW";
+                    }
+                    else if (DT.Rows[0][5].ToString().Contains("VOLVO"))
+                    {
+                        text += Environment.NewLine + "Termék: VOLVO";
+                    }
+                    else
+                    {
+                        text += Environment.NewLine + "Termék: n/a";
+                    }
+
+                    var panel = new StackPanel();
+                    panel.Name = prodDm;
+                    var textfield = new TextBlock();
+                    textfield.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFFDFDFD"));
+                    textfield.Text = text;
+                    panel.Children.Add(textfield);
+
+                    var okBtn = new Button();
+                    okBtn.Focusable = false;
+                    okBtn.FontWeight = FontWeights.Bold;
+                    okBtn.Click += semiFinishedProductsResult;
+                    okBtn.Background = Brushes.LimeGreen;
+                    okBtn.Foreground = Brushes.White;
+                    okBtn.Content = "Lakkozásra került";
+
+                    var nokBtn = new Button();
+                    nokBtn.Focusable = false;
+                    nokBtn.FontWeight = FontWeights.Bold;
+                    nokBtn.Click += semiFinishedProductsResult;
+                    nokBtn.Background = Brushes.Crimson;
+                    nokBtn.Foreground = Brushes.White;
+                    nokBtn.Content = "Nem kerül lakkozásra";
+
+                    var unknowBtn = new Button();
+                    unknowBtn.Focusable = false;
+                    unknowBtn.FontWeight = FontWeights.Bold;
+                    unknowBtn.Click += semiFinishedProductsResult;
+                    unknowBtn.Background = Brushes.Gold;
+                    unknowBtn.Foreground = Brushes.White;
+                    unknowBtn.Content = "Egyéb";
+
+                    panel.Children.Add(okBtn);
+                    panel.Children.Add(nokBtn);
+                    panel.Children.Add(unknowBtn);
+
+                    (sender as Expander).Content = panel;
+                }
+            }
+            catch (Exception msg)
+            {
+                MsgBoxShow("Hiba történt az adatbázisnál! Részletek elmentve az Errors mappába!", false);
+                ErrorLog.Create(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString(), productTxbx.Text, carrierTxbx.Text, mainboardID, heatsinkID);
+            }
+            
+        }
+
+        private void semiFinishedProductsResult(object sender, RoutedEventArgs e)
+        {
+            string prodDm = ((sender as Button).Parent as StackPanel).Name.ToString();
+            string type = "";
+
+            foreach (var item in ((sender as Button).Parent as StackPanel).Children)
+            {   
+                if (item is TextBlock)
+                {
+                    if ((item as TextBlock).Text.Contains("VOLVO"))
+                    {
+                        type = "VOLVO";
+                    }
+                    else if ((item as TextBlock).Text.Contains("BMW"))
+                    {
+                        type = "BMW";
+                    }
+                    else
+                    {
+                        type = "n/a";
+                    }
+                }
+            } 
+
+            string connstring = ConfigurationManager.ConnectionStrings["CCTrace.CCDBConnectionString"].ConnectionString;
+
+            try
+            {
+                using (var conn = new NpgsqlConnection(connstring))
+                {
+                    conn.Open();
+
+                    if (Convert.ToInt32(new NpgsqlCommand("SELECT count(*) FROM semi_finished_products WHERE prod_dm = '" + prodDm + "'",conn).ExecuteScalar()) == 0)
+                        new NpgsqlCommand("INSERT INTO semi_finished_products(prod_dm,product_type,result)Values('"+prodDm+"','"+type+"','"+(sender as Button).Content+"')", conn).ExecuteNonQuery();
+
+                    RefreshSemiFinishedProducts();
+                }
+            }
+            catch(Exception msg)
+            {
+                MsgBoxShow("Hiba történt az adatbázisnál! Részletek elmentve az Errors mappába!", false);
+                ErrorLog.Create(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString(), productTxbx.Text, carrierTxbx.Text, mainboardID, heatsinkID);
+            }
+        }
+
+        private void semiFinishedProductResetBtn_Click(object sender, RoutedEventArgs e)
+        {
+            
+            string connstring = ConfigurationManager.ConnectionStrings["CCTrace.CCDBConnectionString"].ConnectionString;
+
+            try
+            {
+                using (var conn = new NpgsqlConnection(connstring))
+                {
+                    conn.Open();
+
+                    string selectQuery = @"(SELECT bmw.prod_dm,'BMW','RESET' FROM
+                                (
+	                                SELECT COUNT(*) AS db,prod_dm FROM bmw GROUP BY prod_dm
+                                ) AS subq
+                                JOIN bmw ON bmw.prod_dm = subq.prod_dm
+                                WHERE db = 1 AND bmw.prod_dm NOT IN (SELECT prod_dm FROM semi_finished_products))
+
+                                UNION
+
+                                (SELECT volvo.prod_dm,'VOLVO','RESET' FROM
+                                (
+	                                SELECT COUNT(*) AS db,prod_dm FROM volvo GROUP BY prod_dm
+                                ) AS subq
+                                JOIN volvo ON volvo.prod_dm = subq.prod_dm
+                                WHERE db = 1 AND volvo.prod_dm NOT IN (SELECT prod_dm FROM semi_finished_products))
+                                ";
+
+                    new NpgsqlCommand("INSERT INTO semi_finished_products(prod_dm,product_type,result) "+selectQuery+";", conn).ExecuteNonQuery();
+                    semiFinishedProducts.Children.Clear();
+                    semiFinishedCount.Text = semiFinishedProducts.Children.Count.ToString();
+                }
+            }
+            catch (Exception msg)
+            {
+                MsgBoxShow("Hiba történt az adatbázisnál! Részletek elmentve az Errors mappába!", false);
+                ErrorLog.Create(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString(), productTxbx.Text, carrierTxbx.Text, mainboardID, heatsinkID);
+            }
         }
 
         private void SettingUpTheParameters()
@@ -92,9 +393,50 @@ namespace LakkTraceWPF
             clockLbl.Content = h + ":" + m + ":" + s;
 
             if (int.Parse(s) % 15 == 0)
+            {
                 DailyProduction();
+                UpdateLastShiftStatistic();
+                if (IsExpandOpen == 0)
+                {
+                    RefreshSemiFinishedProducts();
+                }
+            }
+
+            if ( (d.Hour == 6 || d.Hour == 14 || d.Hour == 22 ) && d.Minute == 0 && d.Second == 0)
+            {
+                //shift reset
+                try
+                {
+                    string connstring = ConfigurationManager.ConnectionStrings["CCTrace.CCDBConnectionString"].ConnectionString;
+                    var conn = new NpgsqlConnection(connstring);
+                    conn.Open();
+
+                    string machineName = Environment.MachineName.ToString();
+                    if (machineName == "DESKTOP-7L1HPPN")
+                        machineName = "old_lakk_pc";
+
+                    var cmd = new NpgsqlCommand("UPDATE shift_dates SET date = to_char(current_timestamp,'YYYY-MM-DD HH24:MI:SS') where workstation = '" + machineName + "'", conn);
+                    cmd.ExecuteNonQuery();
+
+                    new NpgsqlCommand("UPDATE shift_dates SET shift_stat_bmw = "+int.Parse(BMWtodayShift.Content.ToString()) + " WHERE workstation = '" + machineName + "'", conn).ExecuteNonQuery();
+                    new NpgsqlCommand("UPDATE shift_dates SET shift_stat_volvo = " + int.Parse(VOLVOtodayShift.Content.ToString()) + " WHERE workstation = '" + machineName + "'", conn).ExecuteNonQuery();
+
+                    conn.Close();
+
+                    DailyProduction();
+                    UpdateLastShiftStatistic();
+
+                }
+                catch (Exception msg)
+                {
+                    MsgBoxShow("Hiba történt az adatbázisnál! Részletek elmentve az Errors mappába!", false);
+                    ErrorLog.Create(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString(), productTxbx.Text, carrierTxbx.Text, mainboardID, heatsinkID);
+                }
+            }
         }
+
         
+
         //Error timer
         private void Timer_Error(object sender, EventArgs e)
         {
@@ -530,7 +872,7 @@ namespace LakkTraceWPF
             }
             else // By this time product should be finished
             {
-                dbresultLbl.Text = "EZ A TERMÉK MINDKÉT OLDALA LAKKOZVA LETT";
+                dbresultLbl.Text = "A TERMÉK MINDKÉT OLDALA LAKKOZVA LETT";
                 FormErrorDisplay();
                 DateIntoErrorMessage(table);
             }
@@ -584,6 +926,7 @@ namespace LakkTraceWPF
                 VarnishDisplay();
                 DailyProduction();
                 CheckLacquer();
+                RefreshSemiFinishedProducts();
             }
             catch (Exception msg)
             {
@@ -593,7 +936,39 @@ namespace LakkTraceWPF
                 ErrorSound(3);
             }
         }
+        private void UpdateLastShiftStatistic()
+        {
+            string connstring = ConfigurationManager.ConnectionStrings["CCTrace.CCDBConnectionString"].ConnectionString;
 
+            string machineName = Environment.MachineName.ToString();
+            if (machineName == "DESKTOP-7L1HPPN")
+                machineName = "old_lakk_pc";
+            try
+            {
+                using (var con = new NpgsqlConnection(connstring))
+                {
+                    con.Open();
+
+                    string lastShiftCountHereBmw = new NpgsqlCommand("SELECT shift_stat_bmw FROM shift_dates WHERE workstation = '" + machineName + "'", con).ExecuteScalar().ToString();
+                    string lastShiftCountHereVolvo = new NpgsqlCommand("SELECT shift_stat_volvo FROM shift_dates WHERE workstation = '" + machineName + "'", con).ExecuteScalar().ToString();
+
+                    string lastShiftCountSumBmw = new NpgsqlCommand("SELECT SUM(shift_stat_bmw) FROM shift_dates", con).ExecuteScalar().ToString();
+                    string lastShiftCountSumVolvo = new NpgsqlCommand("SELECT SUM(shift_stat_volvo) FROM shift_dates", con).ExecuteScalar().ToString();
+
+                    lastShiftBmwHere.Content = lastShiftCountHereBmw;
+                    lastShiftVolvoHere.Content = lastShiftCountHereVolvo;
+
+                    lastShiftBmwSum.Content = lastShiftCountSumBmw;
+                    lastShiftVolvoSum.Content = lastShiftCountSumVolvo;
+                }
+            }
+            catch (Exception msg)
+            {
+                MsgBoxShow("Hiba történt! Ezt a terméket NE LAKKOZD! Részletek elmentve az Errors mappába!", false);
+                ErrorLog.Create(MethodBase.GetCurrentMethod().Name.ToString(), msg.ToString(), productTxbx.Text, carrierTxbx.Text, mainboardID, heatsinkID);
+            }
+            
+        }
         // Shows the number of products uploaded this day
         private void DailyProduction()
         {
@@ -605,22 +980,13 @@ namespace LakkTraceWPF
                 conn.Open();
                 //building query
 
-                var cmd = new NpgsqlCommand("SELECT COUNT(*) FROM bmw WHERE timestamp > 'today'", conn);
-                Int32 countbmw = Convert.ToInt32(cmd.ExecuteScalar());
-                cmd = new NpgsqlCommand("SELECT COUNT(*) FROM volvo WHERE timestamp > 'today'", conn);
-                Int32 countvolvo = Convert.ToInt32(cmd.ExecuteScalar());
-
                 string machineName = Environment.MachineName.ToString();
                 if (machineName == "DESKTOP-7L1HPPN")
                     machineName = "old_lakk_pc";
 
                 //machineName = "DESKTOP-BVFFOIU";
-                cmd = new NpgsqlCommand("SELECT COUNT(*) FROM bmw WHERE timestamp > 'today' AND workstation = '" + machineName + "'", conn);
-                Int32 todayCountBmw = Convert.ToInt32(cmd.ExecuteScalar());
-                cmd = new NpgsqlCommand("SELECT COUNT(*) FROM volvo WHERE timestamp > 'today' AND workstation = '" + machineName + "'", conn);
-                Int32 todayCountVolvo = Convert.ToInt32(cmd.ExecuteScalar());
 
-                cmd = new NpgsqlCommand("SELECT COUNT(*) FROM volvo WHERE workstation = '" + machineName + "'", conn);
+                var cmd = new NpgsqlCommand("SELECT COUNT(*) FROM volvo WHERE workstation = '" + machineName + "'", conn);
                 lacquerLoadCounter = Convert.ToInt32(cmd.ExecuteScalar());
                 cmd = new NpgsqlCommand("SELECT COUNT(*) FROM bmw WHERE workstation = '" + machineName + "'", conn);
                 lacquerLoadCounter += Convert.ToInt32(cmd.ExecuteScalar());
@@ -644,10 +1010,13 @@ namespace LakkTraceWPF
 
                 foreach (var mchname in workstations)
                 {
+
                     string resetDatePerWorkstation = new NpgsqlCommand("SELECT date FROM shift_dates WHERE workstation = '" + mchname + "'", conn).ExecuteScalar().ToString();
 
                     if (mchname == machineName)
+                    {
                         thisWorkstationResetDate = resetDatePerWorkstation;
+                    }
 
                     numberOfBmwPerShift += int.Parse(new NpgsqlCommand("SELECT COUNT(*) FROM bmw WHERE timestamp > '" + resetDatePerWorkstation + "' AND workstation = '"+ mchname + "'", conn).ExecuteScalar().ToString());
                     numberOfVolvoPerShift += int.Parse(new NpgsqlCommand("SELECT COUNT(*) FROM volvo WHERE timestamp > '" + resetDatePerWorkstation + "' AND workstation = '"+ mchname + "'", conn).ExecuteScalar().ToString());
@@ -660,12 +1029,6 @@ namespace LakkTraceWPF
 
 
                 conn.Close();
-
-                //today stat
-                BMWsum.Content = countbmw.ToString();
-                BMWtoday.Content = todayCountBmw.ToString();
-                VOLVOsum.Content = countvolvo.ToString();
-                VOLVOtoday.Content = todayCountVolvo.ToString();
 
                 //shift stat
                 BMWsumShift.Content = numberOfBmwPerShift.ToString();
@@ -799,30 +1162,6 @@ namespace LakkTraceWPF
             window.Show();
         }
 
-        private void ShiftResetBtn_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                string connstring = ConfigurationManager.ConnectionStrings["CCTrace.CCDBConnectionString"].ConnectionString;
-                var conn = new NpgsqlConnection(connstring);
-                conn.Open();
 
-                string machineName = Environment.MachineName.ToString();
-                if (machineName == "DESKTOP-7L1HPPN")
-                    machineName = "old_lakk_pc";
-
-                var cmd = new NpgsqlCommand("UPDATE shift_dates SET date = to_char(current_timestamp,'YYYY-MM-DD HH24:MI:SS') where workstation = '" + machineName +"'", conn);
-                cmd.ExecuteNonQuery();
-                conn.Close();
-
-                DailyProduction();
-
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString());
-            }
-            
-        }
     }
 }
