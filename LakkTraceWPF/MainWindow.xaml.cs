@@ -59,12 +59,16 @@ namespace LakkTraceWPF
                     DataSet DS = new DataSet();
                     DataTable DT = new DataTable();
 
+                    string machineName = Environment.MachineName.ToString();
+                    if (machineName == "DESKTOP-7L1HPPN")
+                        machineName = "old_lakk_pc";
+
                     string query = @"(SELECT bmw.prod_dm,bmw.timestamp FROM
                                     (
 	                                    SELECT COUNT(*) AS db,prod_dm FROM bmw GROUP BY prod_dm
                                     ) AS subq
                                     JOIN bmw ON bmw.prod_dm = subq.prod_dm
-                                    WHERE db = 1 AND bmw.prod_dm NOT IN (SELECT prod_dm FROM semi_finished_products))
+                                    WHERE db = 1 AND workstation = '"+ machineName + @"' AND bmw.prod_dm NOT IN (SELECT prod_dm FROM semi_finished_products))
 
                                     UNION
 
@@ -73,7 +77,7 @@ namespace LakkTraceWPF
 	                                    SELECT count(*) AS db,prod_dm FROM volvo GROUP BY prod_dm
                                     ) AS subq
                                     JOIN volvo ON volvo.prod_dm = subq.prod_dm
-                                    WHERE db = 1 AND volvo.prod_dm NOT IN (SELECT prod_dm FROM semi_finished_products))
+                                    WHERE db = 1 AND workstation = '" + machineName + @"' AND volvo.prod_dm NOT IN (SELECT prod_dm FROM semi_finished_products))
 
                                     ORDER BY timestamp LIMIT 70";
 
@@ -120,7 +124,7 @@ namespace LakkTraceWPF
 	                                        SELECT COUNT(*) AS db,prod_dm FROM bmw GROUP BY prod_dm
                                         ) AS subq
                                         JOIN bmw ON bmw.prod_dm = subq.prod_dm
-                                        WHERE db = 1 AND bmw.prod_dm NOT IN (SELECT prod_dm FROM semi_finished_products))
+                                        WHERE db = 1 AND workstation = '" + machineName + @"' AND bmw.prod_dm NOT IN (SELECT prod_dm FROM semi_finished_products))
 
                                         UNION
 
@@ -129,7 +133,7 @@ namespace LakkTraceWPF
 	                                        SELECT count(*) AS db,prod_dm FROM volvo GROUP BY prod_dm
                                         ) AS subq
                                         JOIN volvo ON volvo.prod_dm = subq.prod_dm
-                                        WHERE db = 1 AND volvo.prod_dm NOT IN (SELECT prod_dm FROM semi_finished_products))) as Q";
+                                        WHERE db = 1 AND workstation = '" + machineName + @"' AND volvo.prod_dm NOT IN (SELECT prod_dm FROM semi_finished_products))) as Q";
                    semiFinishedCount.Text = new NpgsqlCommand(Countquery, conn).ExecuteScalar().ToString();
 
                 }
@@ -220,7 +224,7 @@ namespace LakkTraceWPF
 
                     var okBtn = new Button();
                     okBtn.Focusable = false;
-                    okBtn.FontWeight = FontWeights.Bold;
+                    okBtn.FontWeight = FontWeights.ExtraBold;
                     okBtn.Click += semiFinishedProductsResult;
                     okBtn.Background = Brushes.LimeGreen;
                     okBtn.Foreground = Brushes.White;
@@ -228,7 +232,7 @@ namespace LakkTraceWPF
 
                     var nokBtn = new Button();
                     nokBtn.Focusable = false;
-                    nokBtn.FontWeight = FontWeights.Bold;
+                    nokBtn.FontWeight = FontWeights.ExtraBold;
                     nokBtn.Click += semiFinishedProductsResult;
                     nokBtn.Background = Brushes.Crimson;
                     nokBtn.Foreground = Brushes.White;
@@ -236,9 +240,9 @@ namespace LakkTraceWPF
 
                     var unknowBtn = new Button();
                     unknowBtn.Focusable = false;
-                    unknowBtn.FontWeight = FontWeights.Bold;
+                    unknowBtn.FontWeight = FontWeights.ExtraBold;
                     unknowBtn.Click += semiFinishedProductsResult;
-                    unknowBtn.Background = Brushes.Gold;
+                    unknowBtn.Background = Brushes.Goldenrod;
                     unknowBtn.Foreground = Brushes.White;
                     unknowBtn.Content = "Egyéb";
 
@@ -292,6 +296,7 @@ namespace LakkTraceWPF
                     if (Convert.ToInt32(new NpgsqlCommand("SELECT count(*) FROM semi_finished_products WHERE prod_dm = '" + prodDm + "'",conn).ExecuteScalar()) == 0)
                         new NpgsqlCommand("INSERT INTO semi_finished_products(prod_dm,product_type,result)Values('"+prodDm+"','"+type+"','"+(sender as Button).Content+"')", conn).ExecuteNonQuery();
 
+                    IsExpandOpen = 0;
                     RefreshSemiFinishedProducts();
                 }
             }
@@ -313,12 +318,16 @@ namespace LakkTraceWPF
                 {
                     conn.Open();
 
+                    string machineName = Environment.MachineName.ToString();
+                    if (machineName == "DESKTOP-7L1HPPN")
+                        machineName = "old_lakk_pc";
+
                     string selectQuery = @"(SELECT bmw.prod_dm,'BMW','RESET' FROM
                                 (
 	                                SELECT COUNT(*) AS db,prod_dm FROM bmw GROUP BY prod_dm
                                 ) AS subq
                                 JOIN bmw ON bmw.prod_dm = subq.prod_dm
-                                WHERE db = 1 AND bmw.prod_dm NOT IN (SELECT prod_dm FROM semi_finished_products))
+                                WHERE db = 1 AND workstation = '" + machineName + @"' AND bmw.prod_dm NOT IN (SELECT prod_dm FROM semi_finished_products))
 
                                 UNION
 
@@ -327,12 +336,13 @@ namespace LakkTraceWPF
 	                                SELECT COUNT(*) AS db,prod_dm FROM volvo GROUP BY prod_dm
                                 ) AS subq
                                 JOIN volvo ON volvo.prod_dm = subq.prod_dm
-                                WHERE db = 1 AND volvo.prod_dm NOT IN (SELECT prod_dm FROM semi_finished_products))
+                                WHERE db = 1 AND workstation = '" + machineName + @"' AND volvo.prod_dm NOT IN (SELECT prod_dm FROM semi_finished_products))
                                 ";
 
                     new NpgsqlCommand("INSERT INTO semi_finished_products(prod_dm,product_type,result) "+selectQuery+";", conn).ExecuteNonQuery();
                     semiFinishedProducts.Children.Clear();
                     semiFinishedCount.Text = semiFinishedProducts.Children.Count.ToString();
+                    IsExpandOpen = 0;
                 }
             }
             catch (Exception msg)
