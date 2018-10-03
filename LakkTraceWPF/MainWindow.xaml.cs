@@ -27,6 +27,7 @@ namespace LakkTraceWPF
         private string heatsinkID { get; set; }
         private string mainboardID { get; set; }
         public int IsExpandOpen { get; private set; } = 0;
+        private string Interlock { get; set; } = ConfigurationManager.AppSettings["DtInterlock"];
 
         private Int32 lacquerLoadCounter;
 
@@ -551,6 +552,9 @@ namespace LakkTraceWPF
         {
             if (productTxbx.Text.Length == 12 && !IsLeaderApprovalNeeded) //if length is 12 and its a heatsink then get the mainboardID from deltaTecServer
             {
+                if (Interlock != "ON")
+                    return true;
+
                 try
                 {
                     SqlConnection cnn = new SqlConnection(ConfigurationManager.ConnectionStrings["deltaTecServer"].ConnectionString);
@@ -591,6 +595,9 @@ namespace LakkTraceWPF
             }
             else if (productTxbx.Text.Length == 24 && !IsLeaderApprovalNeeded) //if length is 24 and its a mainboardID then get the heatsingID from deltaTecServer
             {
+                if (Interlock != "ON")
+                    return true;
+
                 try
                 {
                     SqlConnection cnn = new SqlConnection(ConfigurationManager.ConnectionStrings["deltaTecServer"].ConnectionString);
@@ -672,6 +679,9 @@ namespace LakkTraceWPF
         //Precheck on deltaTecServer if product test result is OK or not
         private bool PreCheck()
         {
+            if (Interlock != "ON")
+                return true;
+
             try
             {
                 SqlConnection cnn = new SqlConnection(ConfigurationManager.ConnectionStrings["deltaTecServer"].ConnectionString);
