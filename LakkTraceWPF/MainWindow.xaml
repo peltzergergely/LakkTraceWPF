@@ -389,14 +389,16 @@
                             Grid.Row="2"
                             VerticalContentAlignment="Center"
                             HorizontalContentAlignment="Center"
+                            Visibility="Collapsed"
                             />
 
-                    <Label  Content="Itt"
+                    <Label  Content="Ezen az állomáson"
                             FontSize="25"
                             FontStyle="Italic"
                             Foreground="DarkSlateGray"
-                            Grid.Column="2"
+                            Grid.Column="1"
                             Grid.Row="2"
+                            Grid.ColumnSpan="2"
                             VerticalContentAlignment="Center"
                             HorizontalContentAlignment="Center"
                             />
@@ -409,6 +411,7 @@
                             Grid.Row="0"
                             VerticalContentAlignment="Center"
                             HorizontalContentAlignment="Center"
+                            Visibility="Collapsed"
                             />
 
                     <Label  x:Name="lastShiftVolvoSum"
@@ -420,6 +423,7 @@
                             Grid.Row="1"
                             VerticalContentAlignment="Center"
                             HorizontalContentAlignment="Center"
+                            Visibility="Collapsed"
                             />
 
                     <Label  x:Name="lastShiftVolvoHere"
@@ -427,8 +431,9 @@
                             FontSize="35"
                             FontWeight="Bold"
                             Foreground="DarkSlateGray"
-                            Grid.Column="2"
+                            Grid.Column="1"
                             Grid.Row="1"
+                            Grid.ColumnSpan="2"
                             VerticalContentAlignment="Center"
                             HorizontalContentAlignment="Center"
                             />
@@ -437,8 +442,9 @@
                             FontSize="35"
                             FontWeight="Bold"
                             Foreground="DarkSlateGray"
-                            Grid.Column="2"
+                            Grid.Column="1"
                             Grid.Row="0"
+                            Grid.ColumnSpan="2"
                             VerticalContentAlignment="Center"
                             HorizontalContentAlignment="Center"
                             />
@@ -504,13 +510,15 @@
                             Grid.Row="2"
                             VerticalContentAlignment="Center"
                             HorizontalContentAlignment="Center"
+                            Visibility="Collapsed"
                             />
 
-                    <Label  Content="Itt"
+                    <Label  Content="Ezen az állomáson"
                             FontSize="25"
                             FontStyle="Italic"
                             Foreground="DarkSlateGray"
-                            Grid.Column="2"
+                            Grid.Column="1"
+                            Grid.ColumnSpan="2"
                             Grid.Row="2"
                             VerticalContentAlignment="Center"
                             HorizontalContentAlignment="Center"
@@ -522,6 +530,7 @@
                             Foreground="DarkSlateGray"
                             Grid.Column="1"
                             Grid.Row="0"
+                            Visibility="Collapsed"
                             VerticalContentAlignment="Center"
                             HorizontalContentAlignment="Center"
                             />
@@ -533,6 +542,7 @@
                             Foreground="DarkSlateGray"
                             Grid.Column="1"
                             Grid.Row="1"
+                            Visibility="Collapsed"
                             VerticalContentAlignment="Center"
                             HorizontalContentAlignment="Center"
                             />
@@ -542,7 +552,8 @@
                             FontSize="35"
                             FontWeight="Bold"
                             Foreground="DarkSlateGray"
-                            Grid.Column="2"
+                            Grid.Column="1"
+                            Grid.ColumnSpan="2"
                             Grid.Row="1"
                             VerticalContentAlignment="Center"
                             HorizontalContentAlignment="Center"
@@ -552,8 +563,9 @@
                             FontSize="35"
                             FontWeight="Bold"
                             Foreground="DarkSlateGray"
-                            Grid.Column="2"
+                            Grid.Column="1"
                             Grid.Row="0"
+                            Grid.ColumnSpan="2"
                             VerticalContentAlignment="Center"
                             HorizontalContentAlignment="Center"
                             />
