@@ -50,15 +50,20 @@ namespace LakkTraceWPF
             prodCbx.SelectedIndex = 0;
 
             // Add items to workstation's combobox
-            workStationItems.Add("Régi állomás", "'old_lakk_pc'");
-            workStationItems.Add("Új állomás", "'DESKTOP-BVFFOIU'");
-            workStationItems.Add("Összes", "'old_lakk_pc' or workstation LIKE '%' or workstation is null");
+            //workStationItems.Add("Régi állomás", "'old_lakk_pc'");
+            //workStationItems.Add("Új állomás", "'DESKTOP-BVFFOIU'");
+
+            string machineName = Environment.MachineName.ToString();
+            if (machineName == "DESKTOP-7L1HPPN")
+                machineName = "old_lakk_pc";
+
+            workStationItems.Add("Ez az állomás", "'"+ machineName + "'");
+            workStationItems.Add("Összes (Régi adat esetén)", "'old_lakk_pc' or workstation LIKE '%' or workstation is null");
 
             workStationCbx.ItemsSource = workStationItems;
             workStationCbx.DisplayMemberPath = "Key";
             workStationCbx.SelectedValuePath = "Value";
             workStationCbx.SelectedIndex = 0;
-
         }
 
         private void BackBtn_Click(object sender, RoutedEventArgs e)
